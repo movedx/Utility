@@ -147,6 +147,14 @@ void UtilityAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
 
     dcHighPassFilter.state = juce::dsp::IIR::Coefficients<float>::makeHighPass(sampleRate, 10);
     dcHighPassFilter.prepare(spec);
+
+    HP.prepare(spec);
+    LP.prepare(spec);
+
+    HP.setType(juce::dsp::LinkwitzRileyFilterType::highpass);
+    HP.setCutoffFrequency(bassMonoCrossoverParam->get());
+    LP.setType(juce::dsp::LinkwitzRileyFilterType::lowpass);
+    LP.setCutoffFrequency(bassMonoCrossoverParam->get());
 }
 
 void UtilityAudioProcessor::releaseResources()
@@ -181,6 +189,22 @@ bool UtilityAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) 
 }
 #endif
 
+void makeMono(juce::AudioBuffer<float>& buffer, int numChannels)
+{
+    if (numChannels >= 2)
+    {
+        auto* leftChannnel = buffer.getWritePointer(0);
+        auto* rightChannel = buffer.getWritePointer(1);
+
+        for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
+        {
+            float monoSample = (leftChannnel[sample] + rightChannel[sample]) * 0.5f;
+            leftChannnel[sample] = monoSample;
+            rightChannel[sample] = monoSample;
+        }
+    }
+}
+
 void UtilityAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     juce::ScopedNoDenormals noDenormals;
@@ -209,23 +233,16 @@ void UtilityAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce
     //    // ..do something to the data...
     //}
 
+
     if (muteParam->get())
     {
         buffer.clear();
         return;
     }
 
-    if (monoParam->get() && totalNumInputChannels >= 2)
+    if (monoParam->get())
     {
-        auto* leftChannnel = buffer.getWritePointer(0);
-        auto* rightChannel = buffer.getWritePointer(1);
-
-        for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
-        {
-            float monoSample = (leftChannnel[sample] + rightChannel[sample]) * 0.5f;
-            leftChannnel[sample] = monoSample;
-            rightChannel[sample] = monoSample;
-        }
+        makeMono(buffer, totalNumInputChannels);
     }
 
     float width = stereoWidthParam->get() * 0.01f;
@@ -259,6 +276,30 @@ void UtilityAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce
     if (dcParam->get())
     {
         dcHighPassFilter.process(ctx);
+    }
+
+    HP.setCutoffFrequency(bassMonoCrossoverParam->get());
+    LP.setCutoffFrequency(bassMonoCrossoverParam->get());
+
+    hpBuffer.makeCopyOf(buffer);
+    if (bassMonoParam->get())
+    {
+        makeMono(buffer, totalNumInputChannels);
+    }
+    lpBuffer.makeCopyOf(buffer);
+    juce::dsp::AudioBlock<float> hpBlock = juce::dsp::AudioBlock<float>(hpBuffer);
+    juce::dsp::AudioBlock<float> lpBlock = juce::dsp::AudioBlock<float>(lpBuffer);
+    auto hpCtx = juce::dsp::ProcessContextReplacing<float>(hpBlock);
+    auto lpCtx = juce::dsp::ProcessContextReplacing<float>(lpBlock);
+
+    HP.process(hpCtx);
+    LP.process(lpCtx);
+
+    for (auto i = 0; i < buffer.getNumChannels(); i++)
+    {
+        buffer.clear(i, 0, buffer.getNumSamples());
+        buffer.addFrom(i, 0, hpBuffer, i, 0, buffer.getNumSamples());
+        buffer.addFrom(i, 0, lpBuffer, i, 0, buffer.getNumSamples());
     }
 }
 

@@ -64,6 +64,10 @@ private:
     juce::dsp::Gain<float> gain;
     juce::dsp::Panner<float> panner;
     juce::dsp::ProcessorDuplicator<juce::dsp::IIR::Filter<float>, juce::dsp::IIR::Coefficients<float>> dcHighPassFilter;
+    juce::dsp::LinkwitzRileyFilter<float> HP, LP;
+
+    juce::AudioBuffer<float> hpBuffer;
+    juce::AudioBuffer<float> lpBuffer;
 
     juce::AudioParameterFloat* gainParam{ nullptr };
     juce::AudioParameterFloat* balanceParam{ nullptr };
