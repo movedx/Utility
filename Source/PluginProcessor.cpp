@@ -205,6 +205,29 @@ void makeMono(juce::AudioBuffer<float>& buffer, int numChannels)
     }
 }
 
+void muteChannel(juce::AudioBuffer<float>& buffer, int channel)
+{
+    jassert(channel == 0 || channel == 1);
+    auto* chPtr = buffer.getWritePointer(channel);
+    for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
+    {
+        chPtr[sample] = 0.f;
+    }
+}
+
+void swapChannels(juce::AudioBuffer<float>& buffer)
+{
+    jassert(buffer.getNumChannels() == 2);
+    auto* left = buffer.getWritePointer(0);
+    auto* right = buffer.getWritePointer(1);
+    for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
+    {
+        float tmp = left[sample];
+        left[sample] = right[sample];
+        right[sample] = tmp;
+    }
+}
+
 void UtilityAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     juce::ScopedNoDenormals noDenormals;
@@ -240,6 +263,21 @@ void UtilityAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce
         return;
     }
 
+    switch (modeParam->getIndex())
+    {
+    case 0: // stereo
+        break;
+    case 1: // left
+        muteChannel(buffer, 1);
+        break;
+    case 2: // right
+        muteChannel(buffer, 0);
+        break;
+    case 3: // swap
+        swapChannels(buffer);
+        break;
+    }
+
     if (monoParam->get())
     {
         makeMono(buffer, totalNumInputChannels);
@@ -261,6 +299,25 @@ void UtilityAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce
 
             leftChannel[sample] = mid + side;
             rightChannel[sample] = mid - side;
+        }
+    }
+
+    if (invertPhaseLeftParam->get())
+    {
+        auto* leftChannel = buffer.getWritePointer(0);
+
+        for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
+        {
+            leftChannel[sample] = leftChannel[sample] * -1.f;
+        }
+    }
+
+    if (invertPhaseRightParam->get())
+    {
+        auto* rightChannel = buffer.getWritePointer(1);
+        for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
+        {
+            rightChannel[sample] = rightChannel[sample] * -1.f;
         }
     }
 
