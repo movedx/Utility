@@ -282,6 +282,10 @@ void UtilityAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce
     LP.setCutoffFrequency(bassMonoCrossoverParam->get());
 
     hpBuffer.makeCopyOf(buffer);
+    if (bassMonoPreviewParam->get())
+    {
+        hpBuffer.clear();
+    }
     if (bassMonoParam->get())
     {
         makeMono(buffer, totalNumInputChannels);
