@@ -1,0 +1,316 @@
+/*
+  ==============================================================================
+
+    This file contains the basic framework code for a JUCE plugin processor.
+
+  ==============================================================================
+*/
+
+#include "PluginProcessor.h"
+#include "PluginEditor.h"
+
+
+//==============================================================================
+UtilityAudioProcessor::UtilityAudioProcessor()
+#ifndef JucePlugin_PreferredChannelConfigurations
+     : AudioProcessor (BusesProperties()
+                     #if ! JucePlugin_IsMidiEffect
+                      #if ! JucePlugin_IsSynth
+                       .withInput  ("Input",  juce::AudioChannelSet::stereo(), true)
+                      #endif
+                       .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
+                     #endif
+                       )
+#endif
+{
+    gainParam = dynamic_cast<juce::AudioParameterFloat*>(apvts.getParameter("Gain"));
+    jassert(gainParam);
+
+	balanceParam = dynamic_cast<juce::AudioParameterFloat*>(apvts.getParameter("Balance"));
+	jassert(balanceParam);
+
+	stereoWidthParam = dynamic_cast<juce::AudioParameterFloat*>(apvts.getParameter("Width"));
+	jassert(stereoWidthParam);
+
+	muteParam = dynamic_cast<juce::AudioParameterBool*>(apvts.getParameter("Mute"));
+	jassert(muteParam);
+
+	dcParam = dynamic_cast<juce::AudioParameterBool*>(apvts.getParameter("DC"));
+	jassert(dcParam);
+
+	monoParam = dynamic_cast<juce::AudioParameterBool*>(apvts.getParameter("Mono"));
+	jassert(monoParam);
+
+	bassMonoParam = dynamic_cast<juce::AudioParameterBool*>(apvts.getParameter("BassMono"));
+	jassert(bassMonoParam);
+
+	bassMonoCrossoverParam = dynamic_cast<juce::AudioParameterFloat*>(apvts.getParameter("BassMonoCrossover"));
+	jassert(bassMonoCrossoverParam);
+
+	bassMonoPreviewParam = dynamic_cast<juce::AudioParameterBool*>(apvts.getParameter("BassMonoPreview"));
+	jassert(bassMonoPreviewParam);
+
+	invertPhaseLeftParam = dynamic_cast<juce::AudioParameterBool*>(apvts.getParameter("InvertPhaseLeft"));
+	jassert(invertPhaseLeftParam);
+
+	invertPhaseRightParam = dynamic_cast<juce::AudioParameterBool*>(apvts.getParameter("InvertPhaseRight"));
+	jassert(invertPhaseRightParam);
+
+	modeParam = dynamic_cast<juce::AudioParameterChoice*>(apvts.getParameter("Mode"));
+	jassert(modeParam);
+
+    panner.setRule(juce::dsp::PannerRule::balanced);
+}
+
+UtilityAudioProcessor::~UtilityAudioProcessor()
+{
+}
+
+//==============================================================================
+const juce::String UtilityAudioProcessor::getName() const
+{
+    return JucePlugin_Name;
+}
+
+bool UtilityAudioProcessor::acceptsMidi() const
+{
+   #if JucePlugin_WantsMidiInput
+    return true;
+   #else
+    return false;
+   #endif
+}
+
+bool UtilityAudioProcessor::producesMidi() const
+{
+   #if JucePlugin_ProducesMidiOutput
+    return true;
+   #else
+    return false;
+   #endif
+}
+
+bool UtilityAudioProcessor::isMidiEffect() const
+{
+   #if JucePlugin_IsMidiEffect
+    return true;
+   #else
+    return false;
+   #endif
+}
+
+double UtilityAudioProcessor::getTailLengthSeconds() const
+{
+    return 0.0;
+}
+
+int UtilityAudioProcessor::getNumPrograms()
+{
+    return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
+                // so this should be at least 1, even if you're not really implementing programs.
+}
+
+int UtilityAudioProcessor::getCurrentProgram()
+{
+    return 0;
+}
+
+void UtilityAudioProcessor::setCurrentProgram (int index)
+{
+}
+
+const juce::String UtilityAudioProcessor::getProgramName (int index)
+{
+    return {};
+}
+
+void UtilityAudioProcessor::changeProgramName (int index, const juce::String& newName)
+{
+}
+
+//==============================================================================
+void UtilityAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
+{
+    // Use this method as the place to do any pre-playback
+    // initialisation that you need..
+    juce::dsp::ProcessSpec spec;
+    spec.maximumBlockSize = samplesPerBlock;
+    spec.numChannels = getTotalNumOutputChannels();
+    spec.sampleRate = sampleRate;
+
+    gain.prepare(spec);
+    gain.setRampDurationSeconds(0.03f);
+    gain.setGainDecibels(gainParam->get());
+
+    panner.prepare(spec);
+    panner.setPan(0.f);
+
+    dcHighPassFilter.state = juce::dsp::IIR::Coefficients<float>::makeHighPass(sampleRate, 10);
+    dcHighPassFilter.prepare(spec);
+}
+
+void UtilityAudioProcessor::releaseResources()
+{
+    // When playback stops, you can use this as an opportunity to free up any
+    // spare memory, etc.
+}
+
+#ifndef JucePlugin_PreferredChannelConfigurations
+bool UtilityAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
+{
+  #if JucePlugin_IsMidiEffect
+    juce::ignoreUnused (layouts);
+    return true;
+  #else
+    // This is the place where you check if the layout is supported.
+    // In this template code we only support mono or stereo.
+    // Some plugin hosts, such as certain GarageBand versions, will only
+    // load plugins that support stereo bus layouts.
+    if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono()
+     && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
+        return false;
+
+    // This checks if the input layout matches the output layout
+   #if ! JucePlugin_IsSynth
+    if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet())
+        return false;
+   #endif
+
+    return true;
+  #endif
+}
+#endif
+
+void UtilityAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
+{
+    juce::ScopedNoDenormals noDenormals;
+    auto totalNumInputChannels  = getTotalNumInputChannels();
+    auto totalNumOutputChannels = getTotalNumOutputChannels();
+
+    // In case we have more outputs than inputs, this code clears any output
+    // channels that didn't contain input data, (because these aren't
+    // guaranteed to be empty - they may contain garbage).
+    // This is here to avoid people getting screaming feedback
+    // when they first compile a plugin, but obviously you don't need to keep
+    // this code if your algorithm always overwrites all the output channels.
+    for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
+        buffer.clear (i, 0, buffer.getNumSamples());
+
+    // This is the place where you'd normally do the guts of your plugin's
+    // audio processing...
+    // Make sure to reset the state if your inner loop is processing
+    // the samples and the outer loop is handling the channels.
+    // Alternatively, you can process the samples with the channels
+    // interleaved by keeping the same state.
+    //for (int channel = 0; channel < totalNumInputChannels; ++channel)
+    //{
+    //    auto* channelData = buffer.getWritePointer (channel);
+
+    //    // ..do something to the data...
+    //}
+
+    if (muteParam->get())
+    {
+        buffer.clear();
+        return;
+    }
+
+    if (monoParam->get() && totalNumInputChannels >= 2)
+    {
+        auto* leftChannnel = buffer.getWritePointer(0);
+        auto* rightChannel = buffer.getWritePointer(1);
+
+        for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
+        {
+            float monoSample = (leftChannnel[sample] + rightChannel[sample]) * 0.5f;
+            leftChannnel[sample] = monoSample;
+            rightChannel[sample] = monoSample;
+        }
+    }
+
+    float width = stereoWidthParam->get() * 0.01f;
+
+    if (totalNumInputChannels == 2)
+    {
+        auto* leftChannel = buffer.getWritePointer(0);
+        auto* rightChannel = buffer.getWritePointer(1);
+
+        for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
+        {
+            float mid = (leftChannel[sample] + rightChannel[sample]) * 0.5f;
+            float side = (leftChannel[sample] - rightChannel[sample]) * 0.5f;
+
+            side *= width;
+
+            leftChannel[sample] = mid + side;
+            rightChannel[sample] = mid - side;
+        }
+    }
+
+    gain.setGainDecibels(gainParam->get());
+    panner.setPan(juce::jmap(balanceParam->get(), balanceMinRange, balanceMaxRange, -1.f, 1.f));
+
+    auto block = juce::dsp::AudioBlock<float>(buffer);
+    auto ctx = juce::dsp::ProcessContextReplacing<float>(block);
+
+    gain.process(ctx);
+    panner.process(ctx);
+
+    if (dcParam->get())
+    {
+        dcHighPassFilter.process(ctx);
+    }
+}
+
+//==============================================================================
+bool UtilityAudioProcessor::hasEditor() const
+{
+    return true; // (change this to false if you choose to not supply an editor)
+}
+
+juce::AudioProcessorEditor* UtilityAudioProcessor::createEditor()
+{
+    //return new UtilityAudioProcessorEditor (*this);
+    return new juce::GenericAudioProcessorEditor(*this);
+}
+
+//==============================================================================
+void UtilityAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
+{
+    // You should use this method to store your parameters in the memory block.
+    // You could do that either as raw data, or use the XML or ValueTree classes
+    // as intermediaries to make it easy to save and load complex data.
+}
+
+void UtilityAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
+{
+    // You should use this method to restore your parameters from this memory block,
+    // whose contents will have been created by the getStateInformation() call.
+}
+
+juce::AudioProcessorValueTreeState::ParameterLayout UtilityAudioProcessor::createParameterLayout()
+{
+    juce::AudioProcessorValueTreeState::ParameterLayout layout;
+
+    layout.add(std::make_unique<juce::AudioParameterFloat>("Gain", "Gain", juce::NormalisableRange<float>(-50.f, 50.f, 0.5f, 1.f), 0.f));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("Balance", "Balance", juce::NormalisableRange<float>(balanceMinRange, balanceMaxRange, 1.f, 1.f), 0.f));
+	layout.add(std::make_unique<juce::AudioParameterFloat>("Width", "Width", juce::NormalisableRange<float>(0.f, 200.f, 1.f), 100.f));
+	layout.add(std::make_unique<juce::AudioParameterBool>("Mute", "Mute", false));
+	layout.add(std::make_unique<juce::AudioParameterBool>("DC", "DC", false));
+	layout.add(std::make_unique<juce::AudioParameterBool>("Mono", "Mono", false));
+	layout.add(std::make_unique<juce::AudioParameterBool>("BassMono", "Bass Mono", false));
+	layout.add(std::make_unique<juce::AudioParameterFloat>("BassMonoCrossover", "Bass Mono Crossover", juce::NormalisableRange<float>(20.f, 500.f, 1.f), 120.f));
+	layout.add(std::make_unique<juce::AudioParameterBool>("BassMonoPreview", "Bass Mono Preview", false));
+	layout.add(std::make_unique<juce::AudioParameterBool>("InvertPhaseLeft", "Invert Phase Left", false));
+	layout.add(std::make_unique<juce::AudioParameterBool>("InvertPhaseRight", "Invert Phase Right", false));
+	layout.add(std::make_unique<juce::AudioParameterChoice>("Mode", "Mode", juce::StringArray{ "Stereo", "Left", "Right", "Swap", }, 0));
+
+    return layout;
+}
+
+//==============================================================================
+// This creates new instances of the plugin..
+juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
+{
+    return new UtilityAudioProcessor();
+}
