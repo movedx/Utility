@@ -208,11 +208,12 @@ void makeMono(juce::AudioBuffer<float>& buffer, int numChannels)
 void muteChannel(juce::AudioBuffer<float>& buffer, int channel)
 {
     jassert(channel == 0 || channel == 1);
-    auto* chPtr = buffer.getWritePointer(channel);
-    for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
-    {
-        chPtr[sample] = 0.f;
-    }
+    buffer.clear();
+    //auto* chPtr = buffer.getWritePointer(channel);
+    //for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
+    //{
+    //    chPtr[sample] = 0.f;
+    //}
 }
 
 void swapChannels(juce::AudioBuffer<float>& buffer)
