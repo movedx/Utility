@@ -373,8 +373,8 @@ bool UtilityAudioProcessor::hasEditor() const
 
 juce::AudioProcessorEditor* UtilityAudioProcessor::createEditor()
 {
-    //return new UtilityAudioProcessorEditor (*this);
-    return new juce::GenericAudioProcessorEditor(*this);
+    return new UtilityAudioProcessorEditor (*this);
+    //return new juce::GenericAudioProcessorEditor(*this);
 }
 
 //==============================================================================
