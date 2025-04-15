@@ -11,6 +11,172 @@
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
 
+struct LookAndFeel : juce::LookAndFeel_V4
+{
+    void drawRotarySlider(juce::Graphics& g, int x, int y, int width, int height,
+                          float sliderPosProportional, float rotaryStartAngle,
+                          float rotaryEndAngle, juce::Slider& slider) override
+    {
+        auto bounds = juce::Rectangle<float>(x, y, width, height).reduced(4.0f);
+        auto radius = juce::jmin(bounds.getWidth(), bounds.getHeight()) / 2.0f;
+        auto center = bounds.getCentre();
+        auto angle = rotaryStartAngle + sliderPosProportional * (rotaryEndAngle - rotaryStartAngle);
+
+        // Draw arc
+        g.setColour(juce::Colours::darkgrey);
+        juce::Path arc;
+        arc.addCentredArc(center.x, center.y, radius, radius, 0.0f,
+                          rotaryStartAngle, rotaryEndAngle, true);
+        g.strokePath(arc, juce::PathStrokeType(2.0f));
+
+        // Draw pointer
+        float pointerLength = radius * 0.85f;
+        float pointerThickness = 3.0f;
+        juce::Point<float> startPoint = center.getPointOnCircumference(radius * 0.6f, angle);
+        juce::Point<float> endPoint = center.getPointOnCircumference(pointerLength, angle);
+
+        g.setColour(juce::Colours::black);
+        g.drawLine({ startPoint, endPoint }, pointerThickness);
+
+        // Draw value in the center of the knob
+        g.setFont(16.0f);
+        g.setColour(juce::Colours::black);
+        auto valueText = juce::String(slider.getValue(), 1); // Format value with 1 decimal place
+        g.drawFittedText(valueText, bounds.toNearestInt(), juce::Justification::centred, 1);
+    }
+
+    void drawLinearSlider(juce::Graphics& g, int x, int y, int width, int height,
+                          float sliderPos, float minSliderPos, float maxSliderPos,
+                          juce::Slider::SliderStyle, juce::Slider& slider) override
+    {
+        auto bounds = juce::Rectangle<float>(static_cast<float>(x),
+                                             static_cast<float>(y),
+                                             static_cast<float>(width),
+                                             static_cast<float>(height))
+            .reduced(2.0f);
+
+        // Draw border
+        g.setColour(juce::Colours::black);
+        g.drawRect(bounds, 2.0f); // Border thickness of 2.0f
+
+        // Calculate the proportion of the slider's position
+        auto range = maxSliderPos - minSliderPos;
+        float proportion = 0.0f;
+
+        if (std::abs(range) > 0.0001f)
+            proportion = (sliderPos - minSliderPos) / range;
+        DBG("minSliderPos: " << minSliderPos);
+        DBG("maxSliderPos: " << maxSliderPos);
+        DBG(".getvalue(): " << slider.getValue());
+        DBG("range: " << range);
+        DBG("sliderPos: " << sliderPos);
+
+        proportion = juce::jlimit(0.0f, 1.0f, proportion);
+
+        // Fill the slider with blue from left to right
+        auto fillWidth = bounds.getWidth() * proportion;
+        auto fillBounds = bounds.removeFromLeft(fillWidth);
+
+        // Grey portion (top)
+        g.setColour(juce::Colours::grey);
+        g.fillRect(fillBounds);
+
+        // Black portion (bottom)
+        g.setColour(juce::Colours::black);
+        g.fillRect(fillBounds);
+
+        // Draw the slider value in the center
+        g.setColour(juce::Colours::black);
+        g.setFont(14.0f);
+        auto valueText = juce::String(slider.getValue(), 1) + " Hz"; // Format value with 1 decimal place
+        g.drawFittedText(valueText, bounds.toNearestInt(), juce::Justification::centred, 1);
+    }
+
+    void drawComboBox(juce::Graphics& g, int width, int height, bool isButtonDown,
+                      int buttonX, int buttonY, int buttonW, int buttonH,
+                      juce::ComboBox& box) override
+    {
+        auto bounds = juce::Rectangle<int>(0, 0, width, height);
+
+        // Background
+        g.setColour(juce::Colours::grey);
+        g.fillRect(bounds);
+
+        // Border
+        g.setColour(juce::Colours::black);
+        g.drawRect(bounds, 1);
+
+        box.setColour(juce::ComboBox::textColourId, juce::Colours::black);
+
+        // Text (only the selected item's text)
+        //g.setColour(juce::Colours::black);
+        //g.setFont(14.0f);
+        //auto textArea = bounds.reduced(6, 2);
+        //g.drawFittedText("test", textArea, juce::Justification::centredLeft, 1);
+
+        // Dropdown arrow
+        juce::Path arrow;
+        const float arrowSize = 6.0f;
+        const float cx = static_cast<float>(buttonX + buttonW / 2);
+        const float cy = static_cast<float>(buttonY + buttonH / 2);
+
+        arrow.addTriangle(
+            cx - arrowSize * 0.5f, cy - arrowSize * 0.3f,
+            cx + arrowSize * 0.5f, cy - arrowSize * 0.3f,
+            cx, cy + arrowSize * 0.4f
+        );
+
+        g.setColour(juce::Colours::black);
+        g.fillPath(arrow);
+    }
+
+    void drawPopupMenuItem(juce::Graphics& g, const juce::Rectangle<int>& area,
+                           bool isSeparator, bool isActive, bool isHighlighted,
+                           bool isTicked, bool hasSubMenu, const juce::String& text,
+                           const juce::String& shortcutKeyText, const juce::Drawable* icon,
+                           const juce::Colour* textColour) override
+    {
+        if (isSeparator)
+        {
+            g.setColour(juce::Colours::grey);
+            g.drawLine((float)area.getX(), (float)(area.getCentreY()),
+                       (float)area.getRight(), (float)(area.getCentreY()));
+            return;
+        }
+
+        auto backgroundColour = isHighlighted ? juce::Colours::darkgrey : juce::Colours::grey;
+        g.setColour(backgroundColour);
+        g.fillRect(area);
+
+        juce::Colour colourToUse = textColour ? *textColour
+            : (isActive ? juce::Colours::black : juce::Colours::grey);
+
+        g.setColour(colourToUse);
+        g.setFont(14.0f);
+        g.drawFittedText(text, area.reduced(6), juce::Justification::centredLeft, 1);
+    }
+
+    void drawToggleButton(juce::Graphics& g, juce::ToggleButton& button,
+                          bool shouldDrawButtonAsHighlighted, bool shouldDrawButtonAsDown) override
+    {
+        auto bounds = button.getLocalBounds().toFloat().reduced(2.0f);
+
+        // Background
+        g.setColour(button.getToggleState() ? juce::Colours::yellow : juce::Colours::grey);
+        g.fillRoundedRectangle(bounds, 4.0f);
+
+        // Border
+        g.setColour(juce::Colours::black);
+        g.drawRoundedRectangle(bounds, 4.0f, 1.0f);
+
+        // Text
+        g.setFont(14.0f);
+        g.setColour(juce::Colours::black);
+        g.drawFittedText(button.getButtonText(), bounds.toNearestInt(), juce::Justification::centred, 1);
+    }
+};
+
+
 struct PlaceHolder : public juce::Component {
     PlaceHolder(const juce::String& _title, bool _gap) : Component(_title) { title = _title; gap = _gap; }
     ~PlaceHolder() {}
@@ -47,7 +213,10 @@ private:
     // access the processor object that created it.
     UtilityAudioProcessor& audioProcessor;
 
+    LookAndFeel lnf;
+
     juce::Label inputLabel, outputLabel;
+    juce::Label widthLabel, balanceLabel, gainLabel;
 
     juce::ToggleButton invLeftPhaseButton,
         invRightPhaseButton,
