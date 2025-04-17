@@ -206,6 +206,8 @@ void UtilityAudioProcessorEditor::resized()
     gainLabel.setBounds(right.removeFromTop(itemHeight).reduced(itemMargin));
     gainSlider.setBounds(right.removeFromTop(knobHeight).reduced(itemMargin));
 
+    right.removeFromTop(itemMargin * 2.7);
+
     balanceLabel.setBounds(right.removeFromTop(itemHeight).reduced(itemMargin));
     balanceSlider.setBounds(right.removeFromTop(knobHeight).reduced(itemMargin));
 

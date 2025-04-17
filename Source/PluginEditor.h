@@ -44,7 +44,7 @@ struct LookAndFeel : juce::LookAndFeel_V4
         juce::Font monoBoldFont(juce::Font::getDefaultMonospacedFontName(), 15.0f, juce::Font::bold);
         g.setFont(monoBoldFont);
         g.setColour(juce::Colours::black);
-        auto valueText = juce::String(slider.getValue(), 0) + suffix; // Format value with 1 decimal place
+        auto valueText = juce::String(slider.getTextValueSuffix().compareIgnoreCase("<balance>") == 0 ? abs(slider.getValue()) : slider.getValue(), 0) + suffix;
         g.drawFittedText(valueText, bounds.toNearestInt(), juce::Justification::centred, 1);
     }
 
@@ -73,7 +73,10 @@ struct LookAndFeel : juce::LookAndFeel_V4
                           float sliderPos, float minSliderPos, float maxSliderPos,
                           juce::Slider::SliderStyle, juce::Slider& slider) override
     {
-        auto bounds = slider.getLocalBounds();
+        auto bounds = slider.getLocalBounds().reduced(2.f);
+
+        //int position = slider.getPositionOfValue(slider.getValue());
+        //DBG("Position: " << position);
 
         g.setColour(juce::Colours::blue.withAlpha(0.5f));
         g.fillRect(bounds.reduced(1.f));
@@ -89,17 +92,6 @@ struct LookAndFeel : juce::LookAndFeel_V4
         g.drawFittedText(valueText, bounds.toNearestInt(), juce::Justification::centred, 1);
     }
 
-    //juce::Slider::SliderLayout getSliderLayout(juce::Slider& slider) override
-    //{
-    //    juce::Slider::SliderLayout layout;
-
-    //    // Use the full bounds for the slider
-    //    auto bounds = slider.getLocalBounds();
-    //    layout.sliderBounds = bounds;
-    //    layout.textBoxBounds = juce::Rectangle<int>(); // No text box
-
-    //    return layout;
-    //}
 
     void drawComboBox(juce::Graphics& g, int width, int height, bool isButtonDown,
                       int buttonX, int buttonY, int buttonW, int buttonH,
@@ -117,13 +109,7 @@ struct LookAndFeel : juce::LookAndFeel_V4
 
         box.setColour(juce::ComboBox::textColourId, juce::Colours::black);
 
-        // Text (only the selected item's text)
-        //g.setColour(juce::Colours::black);
-        //g.setFont(14.0f);
-        //auto textArea = bounds.reduced(6, 2);
-        //g.drawFittedText("test", textArea, juce::Justification::centredLeft, 1);
 
-        // Dropdown arrow
         juce::Path arrow;
         const float arrowSize = 6.0f;
         const float cx = static_cast<float>(buttonX + buttonW / 2);
