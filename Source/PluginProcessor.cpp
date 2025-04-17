@@ -395,7 +395,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout UtilityAudioProcessor::creat
 {
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
 
-    layout.add(std::make_unique<juce::AudioParameterFloat>("Gain", "Gain", juce::NormalisableRange<float>(-50.f, 50.f, 0.5f, 1.f), 0.f));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("Gain", "Gain", juce::NormalisableRange<float>(-50.f, 50.f, 1.0f, 1.f), 0.f));
     layout.add(std::make_unique<juce::AudioParameterFloat>("Balance", "Balance", juce::NormalisableRange<float>(balanceMinRange, balanceMaxRange, 1.f, 1.f), 0.f));
 	layout.add(std::make_unique<juce::AudioParameterFloat>("Width", "Width", juce::NormalisableRange<float>(0.f, 400.f, 1.f), 100.f));
 	layout.add(std::make_unique<juce::AudioParameterBool>("Mute", "Mute", false));

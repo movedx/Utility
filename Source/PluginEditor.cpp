@@ -1,4 +1,4 @@
-/*
+﻿/*
   ==============================================================================
 
     This file contains the basic framework code for a JUCE plugin editor.
@@ -15,59 +15,71 @@ UtilityAudioProcessorEditor::UtilityAudioProcessorEditor (UtilityAudioProcessor&
 {
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
-    setResizable(true, true);
-    setResizeLimits(150, 250, 600, 1000);
+    //setResizable(true, true);
+    //setResizeLimits(300, 500, 600, 1000);
 
-    const float ratio = 0.6f;
-    getConstrainer()->setFixedAspectRatio(ratio);
+    //const float ratio = 0.6f;
+    //getConstrainer()->setFixedAspectRatio(ratio);
 
-    setSize(300, 500);
+    setSize(300, 400);
 
     juce::Font monoBoldFont(juce::Font::getDefaultMonospacedFontName(), 15.0f, juce::Font::bold);
 
-    invLeftPhaseButton.setButtonText("Inv L");
-    invRightPhaseButton.setButtonText("Inv R");
+    invLeftPhaseButton.setButtonText(u8"\u00D8 L");
+    invRightPhaseButton.setButtonText(u8"\u00D8 R");
     monoButton.setButtonText("Mono");
     bassMonoButton.setButtonText("Bass Mono");
-    bassPreviewButton.setButtonText("Preview");
+
+    bassPreviewButton.setButtonText(u8"\U0001F3A7");
     muteButton.setButtonText("Mute");
     dcButton.setButtonText("DC");
 
     widthLabel.setText("Width", juce::NotificationType::dontSendNotification);
     widthLabel.setColour(juce::Label::textColourId, juce::Colours::black);
     widthLabel.setFont(monoBoldFont);
+    widthLabel.setJustificationType(juce::Justification::centredBottom);
 
     widthSlider.setLookAndFeel(&lnf);
     widthSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
-    widthSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 50, 20);
+    widthSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    widthSlider.setTextValueSuffix("%");
 
     gainLabel.setText("Gain", juce::NotificationType::dontSendNotification);
     gainLabel.setColour(juce::Label::textColourId, juce::Colours::black);
     gainLabel.setFont(monoBoldFont);
+    gainLabel.setJustificationType(juce::Justification::centredBottom);
 
     gainSlider.setLookAndFeel(&lnf);
     gainSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
-    gainSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 50, 20);
+    gainSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    gainSlider.setTextValueSuffix("dB");
 
     balanceLabel.setText("Balance", juce::NotificationType::dontSendNotification);
     balanceLabel.setColour(juce::Label::textColourId, juce::Colours::black);
     balanceLabel.setFont(monoBoldFont);
+    balanceLabel.setJustificationType(juce::Justification::centredBottom);
+
 
     balanceSlider.setLookAndFeel(&lnf);
     balanceSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
-    balanceSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 50, 20);
+    balanceSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    balanceSlider.setTextValueSuffix("<balance>");
 
     bassCrossoverSlider.setLookAndFeel(&lnf);
-    bassCrossoverSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 30, 20);
+    bassCrossoverSlider.setSliderStyle(juce::Slider::LinearHorizontal);
+    bassCrossoverSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    bassCrossoverSlider.setTextValueSuffix("Hz");
 
 
     inputLabel.setColour(juce::Label::textColourId, juce::Colours::black);
     inputLabel.setText("Input", juce::NotificationType::dontSendNotification);
     inputLabel.setFont(monoBoldFont);
+    inputLabel.setJustificationType(juce::Justification::centred);
+
     outputLabel.setColour(juce::Label::textColourId, juce::Colours::black);
     outputLabel.setText("Output", juce::NotificationType::dontSendNotification);
     outputLabel.setFont(monoBoldFont);
-
+    outputLabel.setJustificationType(juce::Justification::centred);
 
     modeComboBox.setLookAndFeel(&lnf);
     modeComboBox.addItem("Stereo", 1);
@@ -151,6 +163,7 @@ void UtilityAudioProcessorEditor::paint (juce::Graphics& g)
     //g.setColour (juce::Colours::white);
     //g.setFont (juce::FontOptions (15.0f));
     //g.drawFittedText ("Hello World!", getLocalBounds(), juce::Justification::centred, 1);
+    g.fillAll(juce::Colours::lightgrey);
 }
 
 void UtilityAudioProcessorEditor::resized()
@@ -163,8 +176,8 @@ void UtilityAudioProcessorEditor::resized()
     auto left = area.withTrimmedRight(area.getWidth() / 2);
     auto right = area.withTrimmedLeft(area.getWidth() / 2);
 
-    int itemHeight = 50;
-    int knobHeight = itemHeight * 4;
+    int itemHeight = 40;
+    int knobHeight = itemHeight * 2.6;
     int itemMargin = 6;
 
     inputLabel.setBounds(left.removeFromTop(itemHeight).reduced(itemMargin));
@@ -175,22 +188,25 @@ void UtilityAudioProcessorEditor::resized()
     invRightPhaseButton.setBounds(buttonArea);
 
     modeComboBox.setBounds(left.removeFromTop(itemHeight).reduced(itemMargin));
+
     widthLabel.setBounds(left.removeFromTop(itemHeight).reduced(itemMargin));
-    
 
     widthSlider.setBounds(left.removeFromTop(knobHeight).reduced(itemMargin));
     monoButton.setBounds(left.removeFromTop(itemHeight).reduced(itemMargin));
     bassMonoButton.setBounds(left.removeFromTop(itemHeight).reduced(itemMargin));
 
-    auto bxAndPArea = left.removeFromTop(itemHeight * 2).reduced(itemMargin);
+    auto bxAndPArea = left.removeFromTop(itemHeight).reduced(itemMargin);
     auto bxAndPWidth = bxAndPArea.getWidth() / 2;
-    bassCrossoverSlider.setBounds(bxAndPArea.removeFromLeft(buttonWidth));
-    bassPreviewButton.setBounds(bxAndPArea);
 
+    bassCrossoverSlider.setBounds(bxAndPArea.removeFromLeft(bxAndPWidth));
+    bassPreviewButton.setBounds(bxAndPArea);
 
     outputLabel.setBounds(right.removeFromTop(itemHeight).reduced(itemMargin));
 
+    gainLabel.setBounds(right.removeFromTop(itemHeight).reduced(itemMargin));
     gainSlider.setBounds(right.removeFromTop(knobHeight).reduced(itemMargin));
+
+    balanceLabel.setBounds(right.removeFromTop(itemHeight).reduced(itemMargin));
     balanceSlider.setBounds(right.removeFromTop(knobHeight).reduced(itemMargin));
 
     auto muteDcArea = right.removeFromTop(itemHeight).reduced(itemMargin);

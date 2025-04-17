@@ -27,7 +27,7 @@ struct LookAndFeel : juce::LookAndFeel_V4
         juce::Path arc;
         arc.addCentredArc(center.x, center.y, radius, radius, 0.0f,
                           rotaryStartAngle, rotaryEndAngle, true);
-        g.strokePath(arc, juce::PathStrokeType(2.0f));
+        g.strokePath(arc, juce::PathStrokeType(4.0f));
 
         // Draw pointer
         float pointerLength = radius * 0.85f;
@@ -38,59 +38,68 @@ struct LookAndFeel : juce::LookAndFeel_V4
         g.setColour(juce::Colours::black);
         g.drawLine({ startPoint, endPoint }, pointerThickness);
 
+        juce::String suffix = makeSuffix(slider);
+
         // Draw value in the center of the knob
-        g.setFont(16.0f);
+        juce::Font monoBoldFont(juce::Font::getDefaultMonospacedFontName(), 15.0f, juce::Font::bold);
+        g.setFont(monoBoldFont);
         g.setColour(juce::Colours::black);
-        auto valueText = juce::String(slider.getValue(), 1); // Format value with 1 decimal place
+        auto valueText = juce::String(slider.getValue(), 0) + suffix; // Format value with 1 decimal place
         g.drawFittedText(valueText, bounds.toNearestInt(), juce::Justification::centred, 1);
+    }
+
+    juce::String makeSuffix(juce::Slider& slider)
+    {
+        juce::String suffix = slider.getTextValueSuffix();
+        auto val = slider.getValue();
+
+        if (suffix.compareIgnoreCase("<balance>") == 0)
+        {
+            suffix = "C"; // thin space
+            if (val < 0)
+            {
+                suffix = "L";
+            }
+            else if (val > 0)
+            {
+                suffix = "R";
+            }
+            val = abs(val);
+        }
+        return juce::String(u8"\u2009") + suffix;
     }
 
     void drawLinearSlider(juce::Graphics& g, int x, int y, int width, int height,
                           float sliderPos, float minSliderPos, float maxSliderPos,
                           juce::Slider::SliderStyle, juce::Slider& slider) override
     {
-        auto bounds = juce::Rectangle<float>(static_cast<float>(x),
-                                             static_cast<float>(y),
-                                             static_cast<float>(width),
-                                             static_cast<float>(height))
-            .reduced(2.0f);
+        auto bounds = slider.getLocalBounds();
 
-        // Draw border
+        g.setColour(juce::Colours::blue.withAlpha(0.5f));
+        g.fillRect(bounds.reduced(1.f));
+
         g.setColour(juce::Colours::black);
-        g.drawRect(bounds, 2.0f); // Border thickness of 2.0f
+        g.drawRect(bounds, 1.f);
 
-        // Calculate the proportion of the slider's position
-        auto range = maxSliderPos - minSliderPos;
-        float proportion = 0.0f;
+        juce::String suffix = makeSuffix(slider);
 
-        if (std::abs(range) > 0.0001f)
-            proportion = (sliderPos - minSliderPos) / range;
-        DBG("minSliderPos: " << minSliderPos);
-        DBG("maxSliderPos: " << maxSliderPos);
-        DBG(".getvalue(): " << slider.getValue());
-        DBG("range: " << range);
-        DBG("sliderPos: " << sliderPos);
-
-        proportion = juce::jlimit(0.0f, 1.0f, proportion);
-
-        // Fill the slider with blue from left to right
-        auto fillWidth = bounds.getWidth() * proportion;
-        auto fillBounds = bounds.removeFromLeft(fillWidth);
-
-        // Grey portion (top)
-        g.setColour(juce::Colours::grey);
-        g.fillRect(fillBounds);
-
-        // Black portion (bottom)
-        g.setColour(juce::Colours::black);
-        g.fillRect(fillBounds);
-
-        // Draw the slider value in the center
         g.setColour(juce::Colours::black);
         g.setFont(14.0f);
-        auto valueText = juce::String(slider.getValue(), 1) + " Hz"; // Format value with 1 decimal place
+        auto valueText = juce::String(slider.getValue(), 0) + suffix;
         g.drawFittedText(valueText, bounds.toNearestInt(), juce::Justification::centred, 1);
     }
+
+    //juce::Slider::SliderLayout getSliderLayout(juce::Slider& slider) override
+    //{
+    //    juce::Slider::SliderLayout layout;
+
+    //    // Use the full bounds for the slider
+    //    auto bounds = slider.getLocalBounds();
+    //    layout.sliderBounds = bounds;
+    //    layout.textBoxBounds = juce::Rectangle<int>(); // No text box
+
+    //    return layout;
+    //}
 
     void drawComboBox(juce::Graphics& g, int width, int height, bool isButtonDown,
                       int buttonX, int buttonY, int buttonW, int buttonH,
@@ -162,12 +171,12 @@ struct LookAndFeel : juce::LookAndFeel_V4
         auto bounds = button.getLocalBounds().toFloat().reduced(2.0f);
 
         // Background
-        g.setColour(button.getToggleState() ? juce::Colours::yellow : juce::Colours::grey);
-        g.fillRoundedRectangle(bounds, 4.0f);
+        g.setColour(button.getToggleState() ? juce::Colour(232, 171, 5) : juce::Colours::grey);
+        g.fillRect(bounds);
 
         // Border
         g.setColour(juce::Colours::black);
-        g.drawRoundedRectangle(bounds, 4.0f, 1.0f);
+        g.drawRect(bounds);
 
         // Text
         g.setFont(14.0f);
