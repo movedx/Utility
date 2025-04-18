@@ -21,9 +21,61 @@ UtilityAudioProcessorEditor::UtilityAudioProcessorEditor (UtilityAudioProcessor&
     //const float ratio = 0.6f;
     //getConstrainer()->setFixedAspectRatio(ratio);
 
-    setSize(300, 400);
+    using namespace juce;
 
-    juce::Font monoBoldFont(juce::Font::getDefaultMonospacedFontName(), 15.0f, juce::Font::bold);
+    juce::LookAndFeel::getDefaultLookAndFeel().setDefaultSansSerifTypeface(fontRegular);
+
+    setSize(300, 430);
+
+    //setMouseTracking(true);
+    //for (int i = 0; i < getNumChildComponents(); ++i)
+    //{
+    //    if (auto* child = getChildComponent(i))
+    //        child->mouse
+    //        child->setMouseTracking(true);
+    //}
+
+#if JUCE_DEBUG
+    for (int i = 0; i < getNumChildComponents(); ++i)
+    {
+        if (auto* child = getChildComponent(i))
+        {
+            child->setInterceptsMouseClicks(true, true);
+        }
+    }
+#endif
+
+    juce::Font smallFont = Font(fontRegular);
+    smallFont.setHeight(20.f);
+
+    juce::Font mediumFont = Font(fontMedium);
+    mediumFont.setHeight(20.f);
+
+    juce::Font semiBoldFont = Font(fontSemiBold);
+    semiBoldFont.setHeight(20.f);
+
+    juce::Font boldFont = Font(fontBold);
+    boldFont.setHeight(20.f);
+
+    setName("Main Window");
+    inputLabel.setName("Input Label");
+    outputLabel.setName("Output Label");
+    widthLabel.setName("Width Label");
+    balanceLabel.setName("Balance Label");
+    gainLabel.setName("Gain Label");
+    invLeftPhaseButton.setName("Invert Left Phase Button");
+    invRightPhaseButton.setName("Invert Right Phase Button");
+    monoButton.setName("Mono Button");
+    bassMonoButton.setName("Bass Mono Button");
+    bassPreviewButton.setName("Bass Preview Button");
+    muteButton.setName("Mute Button");
+    dcButton.setName("DC Button");
+    widthSlider.setName("Width Slider");
+    gainSlider.setName("Gain Slider");
+    balanceSlider.setName("Balance Slider");
+    bassCrossoverSlider.setName("Bass Crossover Slider");
+    modeComboBox.setName("Mode ComboBox");
+
 
     invLeftPhaseButton.setButtonText(u8"\u00D8 L");
     invRightPhaseButton.setButtonText(u8"\u00D8 R");
@@ -34,52 +86,52 @@ UtilityAudioProcessorEditor::UtilityAudioProcessorEditor (UtilityAudioProcessor&
     muteButton.setButtonText("Mute");
     dcButton.setButtonText("DC");
 
-    widthLabel.setText("Width", juce::NotificationType::dontSendNotification);
-    widthLabel.setColour(juce::Label::textColourId, juce::Colours::black);
-    widthLabel.setFont(monoBoldFont);
-    widthLabel.setJustificationType(juce::Justification::centredBottom);
+    widthLabel.setText("Width", NotificationType::dontSendNotification);
+    widthLabel.setColour(Label::textColourId, juce::Colours::black);
+    widthLabel.setJustificationType(Justification::centredBottom);
+    widthLabel.setFont(semiBoldFont.withHeight(FontHeight::L));
 
     widthSlider.setLookAndFeel(&lnf);
-    widthSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
-    widthSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    widthSlider.setSliderStyle(Slider::RotaryVerticalDrag);
+    widthSlider.setTextBoxStyle(Slider::NoTextBox, false, 0, 0);
     widthSlider.setTextValueSuffix("%");
 
     gainLabel.setText("Gain", juce::NotificationType::dontSendNotification);
-    gainLabel.setColour(juce::Label::textColourId, juce::Colours::black);
-    gainLabel.setFont(monoBoldFont);
-    gainLabel.setJustificationType(juce::Justification::centredBottom);
+    gainLabel.setColour(juce::Label::textColourId, Colours::black);
+    gainLabel.setJustificationType(Justification::centredBottom);
+    gainLabel.setFont(semiBoldFont.withHeight(FontHeight::L));
 
     gainSlider.setLookAndFeel(&lnf);
-    gainSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
-    gainSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    gainSlider.setSliderStyle(Slider::RotaryVerticalDrag);
+    gainSlider.setTextBoxStyle(Slider::NoTextBox, false, 0, 0);
     gainSlider.setTextValueSuffix("dB");
 
-    balanceLabel.setText("Balance", juce::NotificationType::dontSendNotification);
-    balanceLabel.setColour(juce::Label::textColourId, juce::Colours::black);
-    balanceLabel.setFont(monoBoldFont);
-    balanceLabel.setJustificationType(juce::Justification::centredBottom);
+    balanceLabel.setText("Balance", NotificationType::dontSendNotification);
+    balanceLabel.setColour(Label::textColourId, Colours::black);
+    balanceLabel.setJustificationType(Justification::centredBottom);
+    balanceLabel.setFont(semiBoldFont.withHeight(FontHeight::L));
 
 
     balanceSlider.setLookAndFeel(&lnf);
-    balanceSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
-    balanceSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    balanceSlider.setSliderStyle(Slider::RotaryVerticalDrag);
+    balanceSlider.setTextBoxStyle(Slider::NoTextBox, false, 0, 0);
     balanceSlider.setTextValueSuffix("<balance>");
 
     bassCrossoverSlider.setLookAndFeel(&lnf);
-    bassCrossoverSlider.setSliderStyle(juce::Slider::LinearHorizontal);
-    bassCrossoverSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    bassCrossoverSlider.setSliderStyle(Slider::LinearHorizontal);
+    bassCrossoverSlider.setTextBoxStyle(Slider::NoTextBox, false, 0, 0);
     bassCrossoverSlider.setTextValueSuffix("Hz");
 
 
-    inputLabel.setColour(juce::Label::textColourId, juce::Colours::black);
-    inputLabel.setText("Input", juce::NotificationType::dontSendNotification);
-    inputLabel.setFont(monoBoldFont);
-    inputLabel.setJustificationType(juce::Justification::centred);
+    inputLabel.setColour(juce::Label::textColourId, Colours::black);
+    inputLabel.setText("Input", NotificationType::dontSendNotification);
+    inputLabel.setFont(boldFont.withHeight(FontHeight::XL));
+    inputLabel.setJustificationType(Justification::centred);
 
-    outputLabel.setColour(juce::Label::textColourId, juce::Colours::black);
-    outputLabel.setText("Output", juce::NotificationType::dontSendNotification);
-    outputLabel.setFont(monoBoldFont);
-    outputLabel.setJustificationType(juce::Justification::centred);
+    outputLabel.setColour(juce::Label::textColourId, Colours::black);
+    outputLabel.setText("Output", NotificationType::dontSendNotification);
+    outputLabel.setFont(boldFont.withHeight(FontHeight::XL));
+    outputLabel.setJustificationType(Justification::centred);
 
     modeComboBox.setLookAndFeel(&lnf);
     modeComboBox.addItem("Stereo", 1);
@@ -118,9 +170,9 @@ UtilityAudioProcessorEditor::UtilityAudioProcessorEditor (UtilityAudioProcessor&
     addAndMakeVisible(balanceLabel);
     addAndMakeVisible(gainLabel);
 
-    using SliderAttachment = juce::AudioProcessorValueTreeState::SliderAttachment;
-    using ComboBoxAttachment = juce::AudioProcessorValueTreeState::ComboBoxAttachment;
-    using ButtonAttachment = juce::AudioProcessorValueTreeState::ButtonAttachment;
+    using SliderAttachment = AudioProcessorValueTreeState::SliderAttachment;
+    using ComboBoxAttachment = AudioProcessorValueTreeState::ComboBoxAttachment;
+    using ButtonAttachment = AudioProcessorValueTreeState::ButtonAttachment;
 
     widthSliderAttachment = std::make_unique<SliderAttachment>(audioProcessor.apvts, "Width", widthSlider);
     gainSliderAttachment = std::make_unique<SliderAttachment>(audioProcessor.apvts, "Gain", gainSlider);
@@ -157,62 +209,121 @@ UtilityAudioProcessorEditor::~UtilityAudioProcessorEditor()
 //==============================================================================
 void UtilityAudioProcessorEditor::paint (juce::Graphics& g)
 {
-    // (Our component is opaque, so we must completely fill the background with a solid colour)
-    //g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
-
-    //g.setColour (juce::Colours::white);
-    //g.setFont (juce::FontOptions (15.0f));
-    //g.drawFittedText ("Hello World!", getLocalBounds(), juce::Justification::centred, 1);
     g.fillAll(juce::Colours::lightgrey);
+    auto bounds = getLocalBounds();
+    g.setColour(juce::Colours::grey.withAlpha(0.5f));
+    g.drawVerticalLine(bounds.getWidth() / 2, bounds.getY() + 20, bounds.getBottom() - 20);
 }
 
 void UtilityAudioProcessorEditor::resized()
 {
     // This is generally where you'll want to lay out the positions of any
     // subcomponents in your editor..
-    using namespace juce;
-
     auto area = getLocalBounds();
     auto left = area.withTrimmedRight(area.getWidth() / 2);
     auto right = area.withTrimmedLeft(area.getWidth() / 2);
 
     int itemHeight = 40;
-    int knobHeight = itemHeight * 2.6;
-    int itemMargin = 6;
+    int knobHeight = itemHeight * 3;
+    int itemMargin = 5;
+    int padding = 5;
 
     inputLabel.setBounds(left.removeFromTop(itemHeight).reduced(itemMargin));
 
     auto buttonArea = left.removeFromTop(itemHeight).reduced(itemMargin);
     auto buttonWidth = buttonArea.getWidth() / 2;
-    invLeftPhaseButton.setBounds(buttonArea.removeFromLeft(buttonWidth));
-    invRightPhaseButton.setBounds(buttonArea);
+    invLeftPhaseButton.setBounds(buttonArea.removeFromLeft(buttonWidth).reduced(padding));
+    invRightPhaseButton.setBounds(buttonArea.reduced(padding));
 
-    modeComboBox.setBounds(left.removeFromTop(itemHeight).reduced(itemMargin));
+    modeComboBox.setBounds(left.removeFromTop(itemHeight).reduced(itemMargin).reduced(padding));
 
     widthLabel.setBounds(left.removeFromTop(itemHeight).reduced(itemMargin));
 
     widthSlider.setBounds(left.removeFromTop(knobHeight).reduced(itemMargin));
-    monoButton.setBounds(left.removeFromTop(itemHeight).reduced(itemMargin));
-    bassMonoButton.setBounds(left.removeFromTop(itemHeight).reduced(itemMargin));
+    monoButton.setBounds(left.removeFromTop(itemHeight).reduced(itemMargin).reduced(padding));
+
+
+    left.removeFromTop(25.f);
+
+    bassMonoButton.setBounds(left.removeFromTop(itemHeight).reduced(itemMargin).reduced(padding));
 
     auto bxAndPArea = left.removeFromTop(itemHeight).reduced(itemMargin);
-    auto bxAndPWidth = bxAndPArea.getWidth() / 2;
+    auto bxAndPWidth = bxAndPArea.getWidth() / 1.3;
 
-    bassCrossoverSlider.setBounds(bxAndPArea.removeFromLeft(bxAndPWidth));
-    bassPreviewButton.setBounds(bxAndPArea);
+    bassCrossoverSlider.setBounds(bxAndPArea.removeFromLeft(bxAndPWidth).reduced(padding));
+    bassPreviewButton.setBounds(bxAndPArea.reduced(padding));
 
     outputLabel.setBounds(right.removeFromTop(itemHeight).reduced(itemMargin));
 
     gainLabel.setBounds(right.removeFromTop(itemHeight).reduced(itemMargin));
     gainSlider.setBounds(right.removeFromTop(knobHeight).reduced(itemMargin));
 
-    right.removeFromTop(itemMargin * 2.7);
+    right.removeFromTop(25.f);
 
     balanceLabel.setBounds(right.removeFromTop(itemHeight).reduced(itemMargin));
     balanceSlider.setBounds(right.removeFromTop(knobHeight).reduced(itemMargin));
 
     auto muteDcArea = right.removeFromTop(itemHeight).reduced(itemMargin);
     auto muteWidth = muteDcArea.getWidth() / 2;
-    muteButton.setBounds(muteDcArea.removeFromLeft(muteWidth));
-    dcButton.setBounds(muteDcArea);
+    muteButton.setBounds(muteDcArea.removeFromLeft(muteWidth).reduced(padding));
+    dcButton.setBounds(muteDcArea.reduced(padding));
+
+
+    for (int i = 0; i < getNumChildComponents(); ++i)
+    {
+        if (auto* child = getChildComponent(i))
+        {
+            DBG("Child Component: " + child->getName());
+            DBG("Bounds: " + child->getBounds().toString());
+        }
+    }
+}
+
+void UtilityAudioProcessorEditor::mouseMove(const juce::MouseEvent& event)
+{
+#if JUCE_DEBUG
+    //hoveredComponent = getComponentAt(event.getPosition());
+    //if (hoveredComponent != nullptr)
+    //{
+    //    DBG("Hovered Component: " + hoveredComponent->getName());
+    //    DBG("Hovered Component Type: " + juce::String(typeid(*hoveredComponent).name()));
+    //}
+    //else
+    //{
+    //    DBG("No component is being hovered over.");
+    //}
+#endif
+}
+
+bool UtilityAudioProcessorEditor::keyPressed(const juce::KeyPress& key)
+{
+#if JUCE_DEBUG
+    if (key.getTextCharacter() == 'P' && key.getModifiers().isShiftDown())
+    {
+        if (hoveredComponent != nullptr)
+        {
+            auto globalMousePos = juce::Desktop::getInstance().getMainMouseSource().getScreenPosition();
+
+            auto localMousePos = hoveredComponent->getLocalPoint(nullptr, globalMousePos);
+
+            DBG("Hovered Component: " + hoveredComponent->getName());
+            DBG("Mouse Position Relative to Hovered Component: " + localMousePos.toString());
+            DBG("LocalBounds of Hovered Component: " + hoveredComponent->getLocalBounds().toString());
+        }
+        else
+        {
+            DBG("No component is currently being hovered over.");
+        }
+        return true;
+    }
+    if (key.getTextCharacter() == 'p')
+    {
+        auto globalMousePos = juce::Desktop::getInstance().getMainMouseSource().getScreenPosition();
+        auto localMousePos = getLocalPoint(nullptr, globalMousePos);
+        //DBG("Global Mouse Position: " + globalMousePos.toString());
+        DBG("Mouse Position: " + localMousePos.toString());
+        return true;
+    }
+#endif
+    return false;
 }

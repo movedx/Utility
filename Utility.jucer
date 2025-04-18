@@ -4,6 +4,25 @@
               addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1" pluginManufacturer="B.G."
               cppLanguageStandard="20">
   <MAINGROUP id="yIZFoM" name="Utility">
+    <GROUP id="{939C7779-1E82-4DB2-301E-CA072BE5BB1B}" name="Data">
+      <GROUP id="{300914A4-399B-37FE-CAB9-3C2A94E93EF2}" name="Fonts">
+        <FILE id="px2ICF" name="OFL.txt" compile="0" resource="1" file="Data/Fonts/OFL.txt"/>
+        <FILE id="mZOWU4" name="Gyrochrome-Bold.otf" compile="0" resource="1"
+              file="Data/Fonts/Gyrochrome-Bold.otf"/>
+        <FILE id="uEosSN" name="Gyrochrome-ExtraBold.otf" compile="0" resource="1"
+              file="Data/Fonts/Gyrochrome-ExtraBold.otf"/>
+        <FILE id="DH2KBB" name="Gyrochrome-Heavy.otf" compile="0" resource="1"
+              file="Data/Fonts/Gyrochrome-Heavy.otf"/>
+        <FILE id="HJkt8e" name="Gyrochrome-Medium.otf" compile="0" resource="1"
+              file="Data/Fonts/Gyrochrome-Medium.otf"/>
+        <FILE id="EVqMIW" name="Gyrochrome-Regular.otf" compile="0" resource="1"
+              file="Data/Fonts/Gyrochrome-Regular.otf"/>
+        <FILE id="zjRuGn" name="Gyrochrome-SemiBold.otf" compile="0" resource="1"
+              file="Data/Fonts/Gyrochrome-SemiBold.otf"/>
+        <FILE id="M6iNwa" name="GyrochromeVF.ttf" compile="0" resource="1"
+              file="Data/Fonts/GyrochromeVF.ttf"/>
+      </GROUP>
+    </GROUP>
     <GROUP id="{E6C418B4-4BBA-77AC-03EE-B5395479E85F}" name="Source">
       <FILE id="cjbNpr" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>

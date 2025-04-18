@@ -11,6 +11,14 @@
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
 
+enum FontHeight
+{
+    S = 18,
+    M = 20,
+    L = 22,
+    XL = 25
+};
+
 struct LookAndFeel : juce::LookAndFeel_V4
 {
     void drawRotarySlider(juce::Graphics& g, int x, int y, int width, int height,
@@ -23,7 +31,7 @@ struct LookAndFeel : juce::LookAndFeel_V4
         auto angle = rotaryStartAngle + sliderPosProportional * (rotaryEndAngle - rotaryStartAngle);
 
         // Draw arc
-        g.setColour(juce::Colours::darkgrey);
+        g.setColour(juce::Colours::grey);
         juce::Path arc;
         arc.addCentredArc(center.x, center.y, radius, radius, 0.0f,
                           rotaryStartAngle, rotaryEndAngle, true);
@@ -41,9 +49,10 @@ struct LookAndFeel : juce::LookAndFeel_V4
         juce::String suffix = makeSuffix(slider);
 
         // Draw value in the center of the knob
-        juce::Font monoBoldFont(juce::Font::getDefaultMonospacedFontName(), 15.0f, juce::Font::bold);
-        g.setFont(monoBoldFont);
+        //juce::Font monoBoldFont(juce::Font::getDefaultMonospacedFontName(), 15.0f, juce::Font::bold);
+        //g.setFont(monoBoldFont);
         g.setColour(juce::Colours::black);
+        g.setFont(FontHeight::M);
         auto valueText = juce::String(slider.getTextValueSuffix().compareIgnoreCase("<balance>") == 0 ? abs(slider.getValue()) : slider.getValue(), 0) + suffix;
         g.drawFittedText(valueText, bounds.toNearestInt(), juce::Justification::centred, 1);
     }
@@ -73,23 +82,20 @@ struct LookAndFeel : juce::LookAndFeel_V4
                           float sliderPos, float minSliderPos, float maxSliderPos,
                           juce::Slider::SliderStyle, juce::Slider& slider) override
     {
-        auto bounds = slider.getLocalBounds().reduced(2.f);
-
+        //slider.setVelocityBasedMode(true);
         //int position = slider.getPositionOfValue(slider.getValue());
-        //DBG("Position: " << position);
 
         g.setColour(juce::Colours::blue.withAlpha(0.5f));
-        g.fillRect(bounds.reduced(1.f));
+        g.fillRect(0, 0, int(sliderPos - x), height);
 
         g.setColour(juce::Colours::black);
-        g.drawRect(bounds, 1.f);
+        g.drawRect(0, 0, width, height, 1);
 
         juce::String suffix = makeSuffix(slider);
 
         g.setColour(juce::Colours::black);
-        g.setFont(14.0f);
         auto valueText = juce::String(slider.getValue(), 0) + suffix;
-        g.drawFittedText(valueText, bounds.toNearestInt(), juce::Justification::centred, 1);
+        g.drawFittedText(valueText, juce::Rectangle(0, 0, width, height), juce::Justification::centred, 1);
     }
 
 
@@ -100,7 +106,7 @@ struct LookAndFeel : juce::LookAndFeel_V4
         auto bounds = juce::Rectangle<int>(0, 0, width, height);
 
         // Background
-        g.setColour(juce::Colours::grey);
+        g.setColour(juce::Colours::whitesmoke);
         g.fillRect(bounds);
 
         // Border
@@ -133,39 +139,35 @@ struct LookAndFeel : juce::LookAndFeel_V4
     {
         if (isSeparator)
         {
-            g.setColour(juce::Colours::grey);
+            g.setColour(juce::Colours::whitesmoke);
             g.drawLine((float)area.getX(), (float)(area.getCentreY()),
                        (float)area.getRight(), (float)(area.getCentreY()));
             return;
         }
 
-        auto backgroundColour = isHighlighted ? juce::Colours::darkgrey : juce::Colours::grey;
+        auto backgroundColour = isHighlighted ? juce::Colours::lightgrey : juce::Colours::whitesmoke;
         g.setColour(backgroundColour);
         g.fillRect(area);
 
         juce::Colour colourToUse = textColour ? *textColour
-            : (isActive ? juce::Colours::black : juce::Colours::grey);
+            : (isActive ? juce::Colours::black : juce::Colours::whitesmoke);
 
         g.setColour(colourToUse);
-        g.setFont(14.0f);
         g.drawFittedText(text, area.reduced(6), juce::Justification::centredLeft, 1);
     }
 
     void drawToggleButton(juce::Graphics& g, juce::ToggleButton& button,
                           bool shouldDrawButtonAsHighlighted, bool shouldDrawButtonAsDown) override
     {
-        auto bounds = button.getLocalBounds().toFloat().reduced(2.0f);
+        auto bounds = button.getLocalBounds().toFloat();
 
-        // Background
-        g.setColour(button.getToggleState() ? juce::Colour(232, 171, 5) : juce::Colours::grey);
+
+        g.setColour(button.getToggleState() ? juce::Colour(232, 171, 5) : juce::Colours::grey.brighter(0.3f));
         g.fillRect(bounds);
 
-        // Border
         g.setColour(juce::Colours::black);
         g.drawRect(bounds);
 
-        // Text
-        g.setFont(14.0f);
         g.setColour(juce::Colours::black);
         g.drawFittedText(button.getButtonText(), bounds.toNearestInt(), juce::Justification::centred, 1);
     }
@@ -196,6 +198,7 @@ struct PlaceHolder : public juce::Component {
 class UtilityAudioProcessorEditor  : public juce::AudioProcessorEditor
 {
 public:
+
     UtilityAudioProcessorEditor (UtilityAudioProcessor&);
     ~UtilityAudioProcessorEditor() override;
 
@@ -203,9 +206,16 @@ public:
     void paint (juce::Graphics&) override;
     void resized() override;
 
+    void mouseMove(const juce::MouseEvent& event) override;
+
+    bool keyPressed(const juce::KeyPress& key) override;
+
 private:
-    // This reference is provided as a quick way for your editor to
-    // access the processor object that created it.
+    juce::Typeface::Ptr fontRegular = juce::Typeface::createSystemTypefaceFor(BinaryData::GyrochromeRegular_otf, BinaryData::GyrochromeRegular_otfSize);
+    juce::Typeface::Ptr fontMedium = juce::Typeface::createSystemTypefaceFor(BinaryData::GyrochromeMedium_otf, BinaryData::GyrochromeMedium_otfSize);
+    juce::Typeface::Ptr fontSemiBold = juce::Typeface::createSystemTypefaceFor(BinaryData::GyrochromeSemiBold_otf, BinaryData::GyrochromeSemiBold_otfSize);
+    juce::Typeface::Ptr fontBold = juce::Typeface::createSystemTypefaceFor(BinaryData::GyrochromeBold_otf, BinaryData::GyrochromeBold_otfSize);
+
     UtilityAudioProcessor& audioProcessor;
 
     LookAndFeel lnf;
@@ -242,6 +252,8 @@ private:
         bassCrossoverSliderAttachment;
 
     std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> modeComboBoxAttachment;
+
+    juce::Component* hoveredComponent = nullptr;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (UtilityAudioProcessorEditor)
 };
