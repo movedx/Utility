@@ -256,51 +256,7 @@ void UtilityAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce
     //    // ..do something to the data...
     //}
 
-
-    if (muteParam->get())
-    {
-        buffer.clear();
-        return;
-    }
-
-    switch (modeParam->getIndex())
-    {
-    case 0: // stereo
-        break;
-    case 1: // left
-        muteChannel(buffer, 1);
-        break;
-    case 2: // right
-        muteChannel(buffer, 0);
-        break;
-    case 3: // swap
-        swapChannels(buffer);
-        break;
-    }
-
-    if (monoParam->get())
-    {
-        makeMono(buffer, totalNumInputChannels);
-    }
-
-    float width = stereoWidthParam->get() * 0.01f;
-
-    if (totalNumInputChannels == 2)
-    {
-        auto* leftChannel = buffer.getWritePointer(0);
-        auto* rightChannel = buffer.getWritePointer(1);
-
-        for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
-        {
-            float mid = (leftChannel[sample] + rightChannel[sample]) * 0.5f;
-            float side = (leftChannel[sample] - rightChannel[sample]) * 0.5f;
-
-            side *= width;
-
-            leftChannel[sample] = mid + side;
-            rightChannel[sample] = mid - side;
-        }
-    }
+    // inv L inv R
 
     if (invertPhaseLeftParam->get())
     {
@@ -321,19 +277,52 @@ void UtilityAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce
         }
     }
 
-    gain.setGainDecibels(gainParam->get());
-    panner.setPan(juce::jmap(balanceParam->get(), balanceMinRange, balanceMaxRange, -1.f, 1.f));
+    // Mode
 
-    auto block = juce::dsp::AudioBlock<float>(buffer);
-    auto ctx = juce::dsp::ProcessContextReplacing<float>(block);
-
-    gain.process(ctx);
-    panner.process(ctx);
-
-    if (dcParam->get())
+    switch (modeParam->getIndex())
     {
-        dcHighPassFilter.process(ctx);
+    case 0: // stereo
+        break;
+    case 1: // left
+        muteChannel(buffer, 1);
+        break;
+    case 2: // right
+        muteChannel(buffer, 0);
+        break;
+    case 3: // swap
+        swapChannels(buffer);
+        break;
     }
+
+    // Stereo Width
+
+    float width = stereoWidthParam->get() * 0.01f;
+
+    if (totalNumInputChannels == 2)
+    {
+        auto* leftChannel = buffer.getWritePointer(0);
+        auto* rightChannel = buffer.getWritePointer(1);
+
+        for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
+        {
+            float mid = (leftChannel[sample] + rightChannel[sample]) * 0.5f;
+            float side = (leftChannel[sample] - rightChannel[sample]) * 0.5f;
+
+            side *= width;
+
+            leftChannel[sample] = mid + side;
+            rightChannel[sample] = mid - side;
+        }
+    }
+
+    // Mono
+
+    if (monoParam->get())
+    {
+        makeMono(buffer, totalNumInputChannels);
+    }
+
+    // Bass Mono Crossover
 
     HP.setCutoffFrequency(bassMonoCrossoverParam->get());
     LP.setCutoffFrequency(bassMonoCrossoverParam->get());
@@ -361,6 +350,30 @@ void UtilityAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce
         buffer.clear(i, 0, buffer.getNumSamples());
         buffer.addFrom(i, 0, hpBuffer, i, 0, buffer.getNumSamples());
         buffer.addFrom(i, 0, lpBuffer, i, 0, buffer.getNumSamples());
+    }
+
+    auto block = juce::dsp::AudioBlock<float>(buffer);
+    auto ctx = juce::dsp::ProcessContextReplacing<float>(block);
+
+    // Gain
+    gain.setGainDecibels(gainParam->get());
+    gain.process(ctx);
+
+    // Balance
+    panner.setPan(juce::jmap(balanceParam->get(), balanceMinRange, balanceMaxRange, -1.f, 1.f));
+    panner.process(ctx);
+
+    // Mute
+    if (muteParam->get())
+    {
+        buffer.clear();
+        return;
+    }
+
+    // Remove DC
+    if (dcParam->get())
+    {
+        dcHighPassFilter.process(ctx);
     }
 }
 
