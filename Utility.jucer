@@ -6,6 +6,14 @@
   <MAINGROUP id="yIZFoM" name="Utility">
     <GROUP id="{939C7779-1E82-4DB2-301E-CA072BE5BB1B}" name="Data">
       <GROUP id="{300914A4-399B-37FE-CAB9-3C2A94E93EF2}" name="Fonts">
+        <FILE id="Fbd3sH" name="Montserrat-Bold.ttf" compile="0" resource="1"
+              file="Data/Fonts/Montserrat-Bold.ttf"/>
+        <FILE id="Pwqz7E" name="Montserrat-Medium.ttf" compile="0" resource="1"
+              file="Data/Fonts/Montserrat-Medium.ttf"/>
+        <FILE id="UPnHg4" name="Montserrat-Regular.ttf" compile="0" resource="1"
+              file="Data/Fonts/Montserrat-Regular.ttf"/>
+        <FILE id="K9L7BG" name="Montserrat-SemiBold.ttf" compile="0" resource="1"
+              file="Data/Fonts/Montserrat-SemiBold.ttf"/>
         <FILE id="aGcAQo" name="Orbitron-Bold.ttf" compile="0" resource="1"
               file="Data/Fonts/Orbitron-Bold.ttf"/>
         <FILE id="wg3J8C" name="Orbitron-Medium.ttf" compile="0" resource="1"
@@ -78,7 +86,7 @@
   <EXPORTFORMATS>
     <VS2022 targetFolder="Builds/VisualStudio2022">
       <CONFIGURATIONS>
-        <CONFIGURATION isDebug="1" name="Debug" targetName="NewProject"/>
+        <CONFIGURATION isDebug="1" name="Debug" targetName="NewProject" enablePluginBinaryCopyStep="1"/>
         <CONFIGURATION isDebug="0" name="Release" targetName="Utility"/>
       </CONFIGURATIONS>
       <MODULEPATHS>

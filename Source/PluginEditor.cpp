@@ -149,6 +149,9 @@ UtilityAudioProcessorEditor::UtilityAudioProcessorEditor (UtilityAudioProcessor&
     muteButton.setLookAndFeel(&lnf);
     dcButton.setLookAndFeel(&lnf);
 
+    bassMonoButton.onClick = [this]() { onClickBassMono(); };
+    onClickBassMono();
+
     addAndMakeVisible(invLeftPhaseButton);
     addAndMakeVisible(invRightPhaseButton);
     addAndMakeVisible(monoButton);
@@ -217,8 +220,6 @@ void UtilityAudioProcessorEditor::paint (juce::Graphics& g)
 
 void UtilityAudioProcessorEditor::resized()
 {
-    // This is generally where you'll want to lay out the positions of any
-    // subcomponents in your editor..
     auto area = getLocalBounds();
     auto left = area.withTrimmedRight(area.getWidth() / 2);
     auto right = area.withTrimmedLeft(area.getWidth() / 2);
@@ -329,4 +330,30 @@ bool UtilityAudioProcessorEditor::keyPressed(const juce::KeyPress& key)
     }
 #endif
     return false;
+}
+
+void UtilityAudioProcessorEditor::onClickBassMono()
+{
+    if (bassMonoButton.getToggleStateValue().toString() == "1")
+    {
+        bassCrossoverSlider.setAlpha(1.f);
+        bassCrossoverSlider.setEnabled(true);
+
+        bassPreviewButton.setAlpha(1.f);
+        bassPreviewButton.setEnabled(true);
+
+    }
+    else
+    {
+        bassCrossoverSlider.setAlpha(0.3f);
+        bassCrossoverSlider.setEnabled(false);
+
+        bassPreviewButton.setAlpha(0.3f);
+        bassPreviewButton.setEnabled(false);
+
+        if (bassPreviewButton.getToggleState())
+        {
+            bassPreviewButton.setToggleState(false, juce::NotificationType::sendNotification);
+        }
+    }
 }

@@ -19,6 +19,26 @@ enum FontHeight
     XL = 25
 };
 
+class CompactSlider : public juce::Slider
+{
+    int offsetX = 0;
+
+    void mouseDown(const juce::MouseEvent& e) override
+    {
+        offsetX = e.x - this->getPositionOfValue(getValue()); // relative Y position from thumb center
+
+        //if (abs(offsetX) > 10) // is out of thumb area?
+        //    offsetX = 0; // ignore offsetY
+
+        juce::Slider::mouseDown(e.withNewPosition(juce::Point<int>(e.x - offsetX, e.y)));
+    }
+
+    void mouseDrag(const juce::MouseEvent& e) override
+    {
+        juce::Slider::mouseDrag(e.withNewPosition(juce::Point<int>(e.x - offsetX, e.y)));
+    }
+};
+
 struct LookAndFeel : juce::LookAndFeel_V4
 {
     void drawRotarySlider(juce::Graphics& g, int x, int y, int width, int height,
@@ -83,8 +103,8 @@ struct LookAndFeel : juce::LookAndFeel_V4
                           juce::Slider::SliderStyle, juce::Slider& slider) override
     {
         //slider.setVelocityBasedMode(true);
-        //int position = slider.getPositionOfValue(slider.getValue());
-        slider.setSliderSnapsToMousePosition(false);
+        int position = slider.getPositionOfValue(slider.getValue());
+        //slider.setSliderSnapsToMousePosition(false);
         g.setColour(juce::Colours::blue.withAlpha(0.5f));
         g.fillRect(0, 0, int(sliderPos - x), height);
 
@@ -105,11 +125,9 @@ struct LookAndFeel : juce::LookAndFeel_V4
     {
         auto bounds = juce::Rectangle<int>(0, 0, width, height);
 
-        // Background
         g.setColour(juce::Colours::whitesmoke);
         g.fillRect(bounds);
 
-        // Border
         g.setColour(juce::Colours::black);
         g.drawRect(bounds, 1);
 
@@ -211,6 +229,8 @@ public:
     bool keyPressed(const juce::KeyPress& key) override;
 
 private:
+    void onClickBassMono();
+
     //juce::Typeface::Ptr fontRegular = juce::Typeface::createSystemTypefaceFor(BinaryData::GyrochromeRegular_otf, BinaryData::GyrochromeRegular_otfSize);
     //juce::Typeface::Ptr fontMedium = juce::Typeface::createSystemTypefaceFor(BinaryData::GyrochromeMedium_otf, BinaryData::GyrochromeMedium_otfSize);
     //juce::Typeface::Ptr fontSemiBold = juce::Typeface::createSystemTypefaceFor(BinaryData::GyrochromeSemiBold_otf, BinaryData::GyrochromeSemiBold_otfSize);
@@ -221,10 +241,15 @@ private:
     //juce::Typeface::Ptr fontSemiBold = juce::Typeface::createSystemTypefaceFor(BinaryData::Exo2SemiBold_ttf, BinaryData::Exo2SemiBold_ttfSize);
     //juce::Typeface::Ptr fontBold = juce::Typeface::createSystemTypefaceFor(BinaryData::Exo2Bold_ttf, BinaryData::Exo2Bold_ttfSize);
 
-    juce::Typeface::Ptr fontRegular = juce::Typeface::createSystemTypefaceFor(BinaryData::OrbitronRegular_ttf, BinaryData::OrbitronRegular_ttfSize);
-    juce::Typeface::Ptr fontMedium = juce::Typeface::createSystemTypefaceFor(BinaryData::OrbitronMedium_ttf, BinaryData::OrbitronMedium_ttfSize);
-    juce::Typeface::Ptr fontSemiBold = juce::Typeface::createSystemTypefaceFor(BinaryData::OrbitronSemiBold_ttf, BinaryData::OrbitronSemiBold_ttfSize);
-    juce::Typeface::Ptr fontBold = juce::Typeface::createSystemTypefaceFor(BinaryData::OrbitronBold_ttf, BinaryData::OrbitronBold_ttfSize);
+    //juce::Typeface::Ptr fontRegular = juce::Typeface::createSystemTypefaceFor(BinaryData::OrbitronRegular_ttf, BinaryData::OrbitronRegular_ttfSize);
+    //juce::Typeface::Ptr fontMedium = juce::Typeface::createSystemTypefaceFor(BinaryData::OrbitronMedium_ttf, BinaryData::OrbitronMedium_ttfSize);
+    //juce::Typeface::Ptr fontSemiBold = juce::Typeface::createSystemTypefaceFor(BinaryData::OrbitronSemiBold_ttf, BinaryData::OrbitronSemiBold_ttfSize);
+    //juce::Typeface::Ptr fontBold = juce::Typeface::createSystemTypefaceFor(BinaryData::OrbitronBold_ttf, BinaryData::OrbitronBold_ttfSize);
+
+    juce::Typeface::Ptr fontRegular = juce::Typeface::createSystemTypefaceFor(BinaryData::MontserratRegular_ttf, BinaryData::MontserratRegular_ttfSize);
+    juce::Typeface::Ptr fontMedium = juce::Typeface::createSystemTypefaceFor(BinaryData::MontserratMedium_ttf, BinaryData::MontserratMedium_ttfSize);
+    juce::Typeface::Ptr fontSemiBold = juce::Typeface::createSystemTypefaceFor(BinaryData::MontserratSemiBold_ttf, BinaryData::MontserratSemiBold_ttfSize);
+    juce::Typeface::Ptr fontBold = juce::Typeface::createSystemTypefaceFor(BinaryData::MontserratBold_ttf, BinaryData::MontserratBold_ttfSize);
 
     UtilityAudioProcessor& audioProcessor;
 
@@ -243,8 +268,9 @@ private:
 
     juce::Slider widthSlider,
         gainSlider,
-        balanceSlider,
-        bassCrossoverSlider;
+        balanceSlider;
+
+    CompactSlider bassCrossoverSlider;
 
     juce::ComboBox modeComboBox;
 
