@@ -77,14 +77,14 @@ struct LookAndFeel : juce::LookAndFeel_V4
         }
         return juce::String(u8"\u2009") + suffix;
     }
-
+    
     void drawLinearSlider(juce::Graphics& g, int x, int y, int width, int height,
                           float sliderPos, float minSliderPos, float maxSliderPos,
                           juce::Slider::SliderStyle, juce::Slider& slider) override
     {
         //slider.setVelocityBasedMode(true);
         //int position = slider.getPositionOfValue(slider.getValue());
-
+        slider.setSliderSnapsToMousePosition(false);
         g.setColour(juce::Colours::blue.withAlpha(0.5f));
         g.fillRect(0, 0, int(sliderPos - x), height);
 
@@ -211,10 +211,20 @@ public:
     bool keyPressed(const juce::KeyPress& key) override;
 
 private:
-    juce::Typeface::Ptr fontRegular = juce::Typeface::createSystemTypefaceFor(BinaryData::GyrochromeRegular_otf, BinaryData::GyrochromeRegular_otfSize);
-    juce::Typeface::Ptr fontMedium = juce::Typeface::createSystemTypefaceFor(BinaryData::GyrochromeMedium_otf, BinaryData::GyrochromeMedium_otfSize);
-    juce::Typeface::Ptr fontSemiBold = juce::Typeface::createSystemTypefaceFor(BinaryData::GyrochromeSemiBold_otf, BinaryData::GyrochromeSemiBold_otfSize);
-    juce::Typeface::Ptr fontBold = juce::Typeface::createSystemTypefaceFor(BinaryData::GyrochromeBold_otf, BinaryData::GyrochromeBold_otfSize);
+    //juce::Typeface::Ptr fontRegular = juce::Typeface::createSystemTypefaceFor(BinaryData::GyrochromeRegular_otf, BinaryData::GyrochromeRegular_otfSize);
+    //juce::Typeface::Ptr fontMedium = juce::Typeface::createSystemTypefaceFor(BinaryData::GyrochromeMedium_otf, BinaryData::GyrochromeMedium_otfSize);
+    //juce::Typeface::Ptr fontSemiBold = juce::Typeface::createSystemTypefaceFor(BinaryData::GyrochromeSemiBold_otf, BinaryData::GyrochromeSemiBold_otfSize);
+    //juce::Typeface::Ptr fontBold = juce::Typeface::createSystemTypefaceFor(BinaryData::GyrochromeBold_otf, BinaryData::GyrochromeBold_otfSize);
+
+    //juce::Typeface::Ptr fontRegular = juce::Typeface::createSystemTypefaceFor(BinaryData::Exo2Regular_ttf, BinaryData::Exo2Regular_ttfSize);
+    //juce::Typeface::Ptr fontMedium = juce::Typeface::createSystemTypefaceFor(BinaryData::Exo2Medium_ttf, BinaryData::Exo2Medium_ttfSize);
+    //juce::Typeface::Ptr fontSemiBold = juce::Typeface::createSystemTypefaceFor(BinaryData::Exo2SemiBold_ttf, BinaryData::Exo2SemiBold_ttfSize);
+    //juce::Typeface::Ptr fontBold = juce::Typeface::createSystemTypefaceFor(BinaryData::Exo2Bold_ttf, BinaryData::Exo2Bold_ttfSize);
+
+    juce::Typeface::Ptr fontRegular = juce::Typeface::createSystemTypefaceFor(BinaryData::OrbitronRegular_ttf, BinaryData::OrbitronRegular_ttfSize);
+    juce::Typeface::Ptr fontMedium = juce::Typeface::createSystemTypefaceFor(BinaryData::OrbitronMedium_ttf, BinaryData::OrbitronMedium_ttfSize);
+    juce::Typeface::Ptr fontSemiBold = juce::Typeface::createSystemTypefaceFor(BinaryData::OrbitronSemiBold_ttf, BinaryData::OrbitronSemiBold_ttfSize);
+    juce::Typeface::Ptr fontBold = juce::Typeface::createSystemTypefaceFor(BinaryData::OrbitronBold_ttf, BinaryData::OrbitronBold_ttfSize);
 
     UtilityAudioProcessor& audioProcessor;
 

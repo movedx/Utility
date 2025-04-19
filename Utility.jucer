@@ -6,6 +6,31 @@
   <MAINGROUP id="yIZFoM" name="Utility">
     <GROUP id="{939C7779-1E82-4DB2-301E-CA072BE5BB1B}" name="Data">
       <GROUP id="{300914A4-399B-37FE-CAB9-3C2A94E93EF2}" name="Fonts">
+        <FILE id="aGcAQo" name="Orbitron-Bold.ttf" compile="0" resource="1"
+              file="Data/Fonts/Orbitron-Bold.ttf"/>
+        <FILE id="wg3J8C" name="Orbitron-Medium.ttf" compile="0" resource="1"
+              file="Data/Fonts/Orbitron-Medium.ttf"/>
+        <FILE id="F5Ajhq" name="Orbitron-Regular.ttf" compile="0" resource="1"
+              file="Data/Fonts/Orbitron-Regular.ttf"/>
+        <FILE id="AnqsoY" name="Orbitron-SemiBold.ttf" compile="0" resource="1"
+              file="Data/Fonts/Orbitron-SemiBold.ttf"/>
+        <FILE id="Pa9F9t" name="Exo2-Bold.ttf" compile="0" resource="1" file="Data/Fonts/Exo2-Bold.ttf"/>
+        <FILE id="Fs3rhr" name="Exo2-Light.ttf" compile="0" resource="1" file="Data/Fonts/Exo2-Light.ttf"/>
+        <FILE id="KHJmEI" name="Exo2-Medium.ttf" compile="0" resource="1" file="Data/Fonts/Exo2-Medium.ttf"/>
+        <FILE id="hcQ6I2" name="Exo2-Regular.ttf" compile="0" resource="1"
+              file="Data/Fonts/Exo2-Regular.ttf"/>
+        <FILE id="NNyEri" name="Exo2-SemiBold.ttf" compile="0" resource="1"
+              file="Data/Fonts/Exo2-SemiBold.ttf"/>
+        <FILE id="XSAPcC" name="Fredoka-Bold.ttf" compile="0" resource="1"
+              file="Data/Fonts/Fredoka-Bold.ttf"/>
+        <FILE id="k2Gwla" name="Fredoka-Light.ttf" compile="0" resource="1"
+              file="Data/Fonts/Fredoka-Light.ttf"/>
+        <FILE id="dOOzgI" name="Fredoka-Medium.ttf" compile="0" resource="1"
+              file="Data/Fonts/Fredoka-Medium.ttf"/>
+        <FILE id="fq5cz7" name="Fredoka-Regular.ttf" compile="0" resource="1"
+              file="Data/Fonts/Fredoka-Regular.ttf"/>
+        <FILE id="mfAUyl" name="Fredoka-SemiBold.ttf" compile="0" resource="1"
+              file="Data/Fonts/Fredoka-SemiBold.ttf"/>
         <FILE id="px2ICF" name="OFL.txt" compile="0" resource="1" file="Data/Fonts/OFL.txt"/>
         <FILE id="mZOWU4" name="Gyrochrome-Bold.otf" compile="0" resource="1"
               file="Data/Fonts/Gyrochrome-Bold.otf"/>

@@ -251,6 +251,9 @@ void UtilityAudioProcessorEditor::resized()
     auto bxAndPWidth = bxAndPArea.getWidth() / 1.3;
 
     bassCrossoverSlider.setBounds(bxAndPArea.removeFromLeft(bxAndPWidth).reduced(padding));
+    auto bcsBounds = bassCrossoverSlider.getBounds();
+    bcsBounds.setWidth(bcsBounds.getWidth() + padding * 4);
+    bassCrossoverSlider.setBounds(bcsBounds);
     bassPreviewButton.setBounds(bxAndPArea.reduced(padding));
 
     outputLabel.setBounds(right.removeFromTop(itemHeight).reduced(itemMargin));
