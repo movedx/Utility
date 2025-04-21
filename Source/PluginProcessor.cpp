@@ -324,32 +324,34 @@ void UtilityAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce
 
     // Bass Mono Crossover
 
-    HP.setCutoffFrequency(bassMonoCrossoverParam->get());
-    LP.setCutoffFrequency(bassMonoCrossoverParam->get());
+    if (bassMonoParam->get())
+    {
+        HP.setCutoffFrequency(bassMonoCrossoverParam->get());
+        LP.setCutoffFrequency(bassMonoCrossoverParam->get());
+        hpBuffer.makeCopyOf(buffer);
 
-    hpBuffer.makeCopyOf(buffer);
+        makeMono(buffer, totalNumInputChannels);
+
+        lpBuffer.makeCopyOf(buffer);
+        juce::dsp::AudioBlock<float> hpBlock = juce::dsp::AudioBlock<float>(hpBuffer);
+        juce::dsp::AudioBlock<float> lpBlock = juce::dsp::AudioBlock<float>(lpBuffer);
+        auto hpCtx = juce::dsp::ProcessContextReplacing<float>(hpBlock);
+        auto lpCtx = juce::dsp::ProcessContextReplacing<float>(lpBlock);
+
+        HP.process(hpCtx);
+        LP.process(lpCtx);
+
+        for (auto i = 0; i < buffer.getNumChannels(); i++)
+        {
+            buffer.clear(i, 0, buffer.getNumSamples());
+            buffer.addFrom(i, 0, hpBuffer, i, 0, buffer.getNumSamples());
+            buffer.addFrom(i, 0, lpBuffer, i, 0, buffer.getNumSamples());
+        }   
+    }
+
     if (bassMonoPreviewParam->get())
     {
         hpBuffer.clear();
-    }
-    if (bassMonoParam->get())
-    {
-        makeMono(buffer, totalNumInputChannels);
-    }
-    lpBuffer.makeCopyOf(buffer);
-    juce::dsp::AudioBlock<float> hpBlock = juce::dsp::AudioBlock<float>(hpBuffer);
-    juce::dsp::AudioBlock<float> lpBlock = juce::dsp::AudioBlock<float>(lpBuffer);
-    auto hpCtx = juce::dsp::ProcessContextReplacing<float>(hpBlock);
-    auto lpCtx = juce::dsp::ProcessContextReplacing<float>(lpBlock);
-
-    HP.process(hpCtx);
-    LP.process(lpCtx);
-
-    for (auto i = 0; i < buffer.getNumChannels(); i++)
-    {
-        buffer.clear(i, 0, buffer.getNumSamples());
-        buffer.addFrom(i, 0, hpBuffer, i, 0, buffer.getNumSamples());
-        buffer.addFrom(i, 0, lpBuffer, i, 0, buffer.getNumSamples());
     }
 
     auto block = juce::dsp::AudioBlock<float>(buffer);
