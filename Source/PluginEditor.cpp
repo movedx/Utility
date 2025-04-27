@@ -10,8 +10,8 @@
 #include "PluginEditor.h"
 
 //==============================================================================
-UtilityAudioProcessorEditor::UtilityAudioProcessorEditor (UtilityAudioProcessor& p)
-    : AudioProcessorEditor (&p), audioProcessor (p)
+UtilityAudioProcessorEditor::UtilityAudioProcessorEditor(UtilityAudioProcessor& p)
+    : AudioProcessorEditor(&p), audioProcessor(p), widthSlider([this](const juce::MouseEvent& e) { showWidthSliderContextMenu(e); })
 {
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
@@ -152,6 +152,8 @@ UtilityAudioProcessorEditor::UtilityAudioProcessorEditor (UtilityAudioProcessor&
     bassMonoButton.onClick = [this]() { onClickBassMono(); };
     onClickBassMono();
 
+    midSideModePopupMenu.addItem(1, "Mid/Side Mode", true, midSideModeButton.getToggleState());
+
     addAndMakeVisible(invLeftPhaseButton);
     addAndMakeVisible(invRightPhaseButton);
     addAndMakeVisible(monoButton);
@@ -190,6 +192,8 @@ UtilityAudioProcessorEditor::UtilityAudioProcessorEditor (UtilityAudioProcessor&
     bassPreviewButtonAttachment = std::make_unique<ButtonAttachment>(audioProcessor.apvts, "BassMonoPreview", bassPreviewButton);
     muteButtonAttachment = std::make_unique<ButtonAttachment>(audioProcessor.apvts, "Mute", muteButton);
     dcButtonAttachment = std::make_unique<ButtonAttachment>(audioProcessor.apvts, "DC", dcButton);
+
+    midSideModeButtonAttachment = std::make_unique<ButtonAttachment>(audioProcessor.apvts, "MidSideMode", midSideModeButton);
 }
 
 UtilityAudioProcessorEditor::~UtilityAudioProcessorEditor()
@@ -272,7 +276,7 @@ void UtilityAudioProcessorEditor::resized()
     muteButton.setBounds(muteDcArea.removeFromLeft(muteWidth).reduced(padding));
     dcButton.setBounds(muteDcArea.reduced(padding));
 
-
+#if JUCE_DEBUG
     for (int i = 0; i < getNumChildComponents(); ++i)
     {
         if (auto* child = getChildComponent(i))
@@ -281,6 +285,7 @@ void UtilityAudioProcessorEditor::resized()
             DBG("Bounds: " + child->getBounds().toString());
         }
     }
+#endif
 }
 
 void UtilityAudioProcessorEditor::mouseMove(const juce::MouseEvent& event)
@@ -332,6 +337,25 @@ bool UtilityAudioProcessorEditor::keyPressed(const juce::KeyPress& key)
     return false;
 }
 
+//void UtilityAudioProcessorEditor::mouseDown(const juce::MouseEvent& e)
+//{
+//    if (e.mods.isRightButtonDown())
+//    {
+//        midSideModePopupMenu.clear();
+//
+//        midSideModePopupMenu.addItem(1, "Mid/Side Mode", true, midSideModeButton.getToggleState());
+//
+//        midSideModePopupMenu.showMenuAsync(juce::PopupMenu::Options(), [this](int result)
+//        {
+//            if (result == 1)
+//            {
+//                midSideModeButton.setToggleState(!midSideModeButton.getToggleState(), juce::NotificationType::sendNotification);
+//                DBG("Mid/Side Mode toggled to: " + juce::String(midSideModeButton.getToggleState() ? "ON" : "OFF"));
+//            }
+//        });
+//    }
+//}
+
 void UtilityAudioProcessorEditor::onClickBassMono()
 {
     if (bassMonoButton.getToggleStateValue().toString() == "1")
@@ -356,4 +380,28 @@ void UtilityAudioProcessorEditor::onClickBassMono()
             bassPreviewButton.setToggleState(false, juce::NotificationType::sendNotification);
         }
     }
+}
+
+
+void UtilityAudioProcessorEditor::showWidthSliderContextMenu(const juce::MouseEvent& e)
+{
+    //midSideModePopupMenu.clear();
+    //midSideModePopupMenu.addItem(1, "Mid/Side Mode", true, midSideModeButton.getToggleState());
+    //midSideModeButton.setToggleState(!midSideModeButton.getToggleState(), juce::NotificationType::sendNotification);
+    //DBG("Mid/Side Mode toggled to: " + juce::String(midSideModeButton.getToggleState() ? "ON" : "OFF"));
+    //midSideModePopupMenu.showMenuAsync();
+
+
+    midSideModePopupMenu.clear();
+
+    midSideModePopupMenu.addItem(1, "Mid/Side Mode", true, midSideModeButton.getToggleState());
+
+    midSideModePopupMenu.showMenuAsync(juce::PopupMenu::Options().withTargetScreenArea(juce::Rectangle<int>(e.getScreenX(), e.getScreenY(), 1, 1)), [this](int result)
+    {
+        if (result == 1)
+        {
+            midSideModeButton.setToggleState(!midSideModeButton.getToggleState(), juce::NotificationType::sendNotification);
+            DBG("Mid/Side Mode toggled to: " + juce::String(midSideModeButton.getToggleState() ? "ON" : "OFF"));
+        }
+    });
 }

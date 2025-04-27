@@ -59,6 +59,9 @@ UtilityAudioProcessor::UtilityAudioProcessor()
 	modeParam = dynamic_cast<juce::AudioParameterChoice*>(apvts.getParameter("Mode"));
 	jassert(modeParam);
 
+    midSideModeParam = dynamic_cast<juce::AudioParameterBool*>(apvts.getParameter("MidSideMode"));
+    jassert(midSideModeParam);
+
     panner.setRule(juce::dsp::PannerRule::balanced);
 }
 
@@ -296,22 +299,29 @@ void UtilityAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce
 
     // Stereo Width
 
-    float width = stereoWidthParam->get() * 0.01f;
-
-    if (totalNumInputChannels == 2)
+    if (midSideModeParam->get())
     {
-        auto* leftChannel = buffer.getWritePointer(0);
-        auto* rightChannel = buffer.getWritePointer(1);
+        buffer.clear(); // TODO
+    }
+    else
+    {
+        float width = stereoWidthParam->get() * 0.01f;
 
-        for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
+        if (totalNumInputChannels == 2)
         {
-            float mid = (leftChannel[sample] + rightChannel[sample]) * 0.5f;
-            float side = (leftChannel[sample] - rightChannel[sample]) * 0.5f;
+            auto* leftChannel = buffer.getWritePointer(0);
+            auto* rightChannel = buffer.getWritePointer(1);
 
-            side *= width;
+            for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
+            {
+                float mid = (leftChannel[sample] + rightChannel[sample]) * 0.5f;
+                float side = (leftChannel[sample] - rightChannel[sample]) * 0.5f;
 
-            leftChannel[sample] = mid + side;
-            rightChannel[sample] = mid - side;
+                side *= width;
+
+                leftChannel[sample] = mid + side;
+                rightChannel[sample] = mid - side;
+            }
         }
     }
 
@@ -421,6 +431,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout UtilityAudioProcessor::creat
 	layout.add(std::make_unique<juce::AudioParameterBool>("InvertPhaseLeft", "Invert Phase Left", false));
 	layout.add(std::make_unique<juce::AudioParameterBool>("InvertPhaseRight", "Invert Phase Right", false));
 	layout.add(std::make_unique<juce::AudioParameterChoice>("Mode", "Mode", juce::StringArray{ "Stereo", "Left", "Right", "Swap", }, 0));
+    layout.add(std::make_unique<juce::AudioParameterBool>("MidSideMode", "Mid/Side Mode", false));
 
     return layout;
 }

@@ -39,8 +39,51 @@ class CompactSlider : public juce::Slider
     }
 };
 
+class ContextMenuSlider : public juce::Slider
+{
+public:
+    ContextMenuSlider(const std::function<void(const juce::MouseEvent&)>& onRightClickCallback) : rightClickCallback(onRightClickCallback) {}
+
+    void mouseDown(const juce::MouseEvent& e) override
+    {
+        if (e.mods.isRightButtonDown() && rightClickCallback)
+        {
+            rightClickCallback(e);
+        }
+        else
+        {
+            juce::Slider::mouseDown(e);
+        }
+    }
+
+private:
+    std::function<void(const juce::MouseEvent&)> rightClickCallback;
+};
+
+
 struct LookAndFeel : juce::LookAndFeel_V4
 {
+    juce::String makeSuffix(juce::Slider& slider)
+    {
+        juce::String suffix = slider.getTextValueSuffix();
+        auto val = slider.getValue();
+
+        if (suffix.compareIgnoreCase("<balance>") == 0)
+        {
+            suffix = "C"; // thin space
+            if (val < 0)
+            {
+                suffix = "L";
+            }
+            else if (val > 0)
+            {
+                suffix = "R";
+            }
+            val = abs(val);
+        }
+        return juce::String(u8"\u2009") + suffix;
+    }
+
     void drawRotarySlider(juce::Graphics& g, int x, int y, int width, int height,
                           float sliderPosProportional, float rotaryStartAngle,
                           float rotaryEndAngle, juce::Slider& slider) override
@@ -75,27 +118,6 @@ struct LookAndFeel : juce::LookAndFeel_V4
         g.setFont(FontHeight::M);
         auto valueText = juce::String(slider.getTextValueSuffix().compareIgnoreCase("<balance>") == 0 ? abs(slider.getValue()) : slider.getValue(), 0) + suffix;
         g.drawFittedText(valueText, bounds.toNearestInt(), juce::Justification::centred, 1);
-    }
-
-    juce::String makeSuffix(juce::Slider& slider)
-    {
-        juce::String suffix = slider.getTextValueSuffix();
-        auto val = slider.getValue();
-
-        if (suffix.compareIgnoreCase("<balance>") == 0)
-        {
-            suffix = "C"; // thin space
-            if (val < 0)
-            {
-                suffix = "L";
-            }
-            else if (val > 0)
-            {
-                suffix = "R";
-            }
-            val = abs(val);
-        }
-        return juce::String(u8"\u2009") + suffix;
     }
     
     void drawLinearSlider(juce::Graphics& g, int x, int y, int width, int height,
@@ -231,6 +253,8 @@ public:
 private:
     void onClickBassMono();
 
+    void showWidthSliderContextMenu(const juce::MouseEvent& e);
+
     //juce::Typeface::Ptr fontRegular = juce::Typeface::createSystemTypefaceFor(BinaryData::GyrochromeRegular_otf, BinaryData::GyrochromeRegular_otfSize);
     //juce::Typeface::Ptr fontMedium = juce::Typeface::createSystemTypefaceFor(BinaryData::GyrochromeMedium_otf, BinaryData::GyrochromeMedium_otfSize);
     //juce::Typeface::Ptr fontSemiBold = juce::Typeface::createSystemTypefaceFor(BinaryData::GyrochromeSemiBold_otf, BinaryData::GyrochromeSemiBold_otfSize);
@@ -266,13 +290,18 @@ private:
         muteButton,
         dcButton;
 
-    juce::Slider widthSlider,
-        gainSlider,
-        balanceSlider;
+    ContextMenuSlider widthSlider;
+    juce::Slider gainSlider, balanceSlider;
 
     CompactSlider bassCrossoverSlider;
 
     juce::ComboBox modeComboBox;
+
+    juce::ToggleButton midSideModeButton;
+
+    juce::PopupMenu midSideModePopupMenu;
+
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> midSideModeButtonAttachment;
 
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> invLeftPhaseButtonAttachment,
         invRightPhaseButtonAttachment,
