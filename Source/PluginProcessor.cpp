@@ -62,6 +62,9 @@ UtilityAudioProcessor::UtilityAudioProcessor()
     midSideModeParam = dynamic_cast<juce::AudioParameterBool*>(apvts.getParameter("MidSideMode"));
     jassert(midSideModeParam);
 
+    midSideParam = dynamic_cast<juce::AudioParameterFloat*>(apvts.getParameter("MidSide"));
+    jassert(midSideParam);
+
     panner.setRule(juce::dsp::PannerRule::balanced);
 }
 
@@ -297,20 +300,33 @@ void UtilityAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce
         break;
     }
 
-    // Stereo Width
+    // Stereo Width / MidSide balance
 
-    if (midSideModeParam->get())
-    {
-        buffer.clear(); // TODO
-    }
-    else
-    {
-        float width = stereoWidthParam->get() * 0.01f;
 
-        if (totalNumInputChannels == 2)
+    if (totalNumInputChannels == 2)
+    {
+        auto* leftChannel = buffer.getWritePointer(0);
+        auto* rightChannel = buffer.getWritePointer(1);
+
+        if (midSideModeParam->get())
         {
-            auto* leftChannel = buffer.getWritePointer(0);
-            auto* rightChannel = buffer.getWritePointer(1);
+            float midSideBalance = midSideParam->get() * 0.01f;
+
+            for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
+            {
+                float mid = (leftChannel[sample] + rightChannel[sample]) * 0.5f;
+                float side = (leftChannel[sample] - rightChannel[sample]) * 0.5f;
+
+                mid *= (1.0f - midSideBalance);
+                side *= (1.0f + midSideBalance);
+
+                leftChannel[sample] = mid + side;
+                rightChannel[sample] = mid - side;
+            }
+        }
+        else
+        {
+            float width = stereoWidthParam->get() * 0.01f;
 
             for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
             {
@@ -354,15 +370,18 @@ void UtilityAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce
         for (auto i = 0; i < buffer.getNumChannels(); i++)
         {
             buffer.clear(i, 0, buffer.getNumSamples());
-            buffer.addFrom(i, 0, hpBuffer, i, 0, buffer.getNumSamples());
+            if (!bassMonoPreviewParam->get())
+            {
+                buffer.addFrom(i, 0, hpBuffer, i, 0, buffer.getNumSamples());
+            }
             buffer.addFrom(i, 0, lpBuffer, i, 0, buffer.getNumSamples());
         }   
     }
 
-    if (bassMonoPreviewParam->get())
-    {
-        hpBuffer.clear();
-    }
+    //if (bassMonoPreviewParam->get())
+    //{
+    //    hpBuffer.clear();
+    //}
 
     auto block = juce::dsp::AudioBlock<float>(buffer);
     auto ctx = juce::dsp::ProcessContextReplacing<float>(block);
@@ -432,6 +451,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout UtilityAudioProcessor::creat
 	layout.add(std::make_unique<juce::AudioParameterBool>("InvertPhaseRight", "Invert Phase Right", false));
 	layout.add(std::make_unique<juce::AudioParameterChoice>("Mode", "Mode", juce::StringArray{ "Stereo", "Left", "Right", "Swap", }, 0));
     layout.add(std::make_unique<juce::AudioParameterBool>("MidSideMode", "Mid/Side Mode", false));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("MidSide", "Mid/Side", juce::NormalisableRange<float>(-100.f, 100.f, 1.0f, 1.0f), 0.f));
 
     return layout;
 }

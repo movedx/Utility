@@ -81,6 +81,19 @@ struct LookAndFeel : juce::LookAndFeel_V4
             }
             val = abs(val);
         }
+        if (suffix.compareIgnoreCase("<mid/side>") == 0)
+        {
+            suffix = ""; // thin space
+            if (val < 0)
+            {
+                suffix = "M";
+            }
+            else if (val > 0)
+            {
+                suffix = "S";
+            }
+            val = abs(val);
+        }
         return juce::String(u8"\u2009") + suffix;
     }
 
@@ -116,7 +129,21 @@ struct LookAndFeel : juce::LookAndFeel_V4
         //g.setFont(monoBoldFont);
         g.setColour(juce::Colours::black);
         g.setFont(FontHeight::M);
-        auto valueText = juce::String(slider.getTextValueSuffix().compareIgnoreCase("<balance>") == 0 ? abs(slider.getValue()) : slider.getValue(), 0) + suffix;
+        auto value = 0.f;
+        if (slider.getTextValueSuffix().compareIgnoreCase("<balance>") == 0)
+        {
+            value = abs(slider.getValue());
+        }
+        else if (slider.getTextValueSuffix().compareIgnoreCase("<mid/side>") == 0)
+        {
+            value = abs(slider.getValue());
+        }
+        else
+        {
+            value = slider.getValue();
+        }
+        auto valueText = juce::String(value, 0) + suffix;
+        //auto valueText = juce::String(slider.getTextValueSuffix().compareIgnoreCase("<balance>") == 0 ? abs(slider.getValue()) : slider.getValue(), 0) + suffix;
         g.drawFittedText(valueText, bounds.toNearestInt(), juce::Justification::centred, 1);
     }
     
@@ -280,7 +307,7 @@ private:
     LookAndFeel lnf;
 
     juce::Label inputLabel, outputLabel;
-    juce::Label widthLabel, balanceLabel, gainLabel;
+    juce::Label widthLabel, balanceLabel, gainLabel, midSideLabel;
 
     juce::ToggleButton invLeftPhaseButton,
         invRightPhaseButton,
@@ -290,7 +317,7 @@ private:
         muteButton,
         dcButton;
 
-    ContextMenuSlider widthSlider;
+    ContextMenuSlider widthSlider, midSideSlider;
     juce::Slider gainSlider, balanceSlider;
 
     CompactSlider bassCrossoverSlider;
@@ -314,7 +341,8 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> widthSliderAttachment,
         gainSliderAttachment,
         balanceSliderAttachment,
-        bassCrossoverSliderAttachment;
+        bassCrossoverSliderAttachment,
+        midSideSliderAttachment;
 
     std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> modeComboBoxAttachment;
 

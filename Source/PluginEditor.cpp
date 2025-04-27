@@ -11,7 +11,10 @@
 
 //==============================================================================
 UtilityAudioProcessorEditor::UtilityAudioProcessorEditor(UtilityAudioProcessor& p)
-    : AudioProcessorEditor(&p), audioProcessor(p), widthSlider([this](const juce::MouseEvent& e) { showWidthSliderContextMenu(e); })
+    : AudioProcessorEditor(&p),
+    audioProcessor(p),
+    widthSlider([this](const juce::MouseEvent& e) { showWidthSliderContextMenu(e); }),
+    midSideSlider([this](const juce::MouseEvent& e) { showWidthSliderContextMenu(e); })
 {
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
@@ -75,6 +78,7 @@ UtilityAudioProcessorEditor::UtilityAudioProcessorEditor(UtilityAudioProcessor& 
     balanceSlider.setName("Balance Slider");
     bassCrossoverSlider.setName("Bass Crossover Slider");
     modeComboBox.setName("Mode ComboBox");
+    midSideSlider.setName("Mid/Side Balance");
 
 
     invLeftPhaseButton.setButtonText(u8"\u00D8 L");
@@ -95,6 +99,16 @@ UtilityAudioProcessorEditor::UtilityAudioProcessorEditor(UtilityAudioProcessor& 
     widthSlider.setSliderStyle(Slider::RotaryVerticalDrag);
     widthSlider.setTextBoxStyle(Slider::NoTextBox, false, 0, 0);
     widthSlider.setTextValueSuffix("%");
+
+    midSideLabel.setText("Mid/Side", NotificationType::dontSendNotification);
+    midSideLabel.setColour(Label::textColourId, juce::Colours::black);
+    midSideLabel.setJustificationType(Justification::centredBottom);
+    midSideLabel.setFont(semiBoldFont.withHeight(FontHeight::L));
+
+    midSideSlider.setLookAndFeel(&lnf);
+    midSideSlider.setSliderStyle(Slider::RotaryVerticalDrag);
+    midSideSlider.setTextBoxStyle(Slider::NoTextBox, false, 0, 0);
+    midSideSlider.setTextValueSuffix("<mid/side>");
 
     gainLabel.setText("Gain", juce::NotificationType::dontSendNotification);
     gainLabel.setColour(juce::Label::textColourId, Colours::black);
@@ -162,16 +176,20 @@ UtilityAudioProcessorEditor::UtilityAudioProcessorEditor(UtilityAudioProcessor& 
     addAndMakeVisible(muteButton);
     addAndMakeVisible(dcButton);
 
-    addAndMakeVisible(widthSlider);
     addAndMakeVisible(gainSlider);
     addAndMakeVisible(balanceSlider);
     addAndMakeVisible(bassCrossoverSlider);
+    
+    addChildComponent(midSideSlider);
+    addChildComponent(midSideLabel);
+
+    addChildComponent(widthSlider);
+    addChildComponent(widthLabel);
 
     addAndMakeVisible(modeComboBox);
 
     addAndMakeVisible(inputLabel);
     addAndMakeVisible(outputLabel);
-    addAndMakeVisible(widthLabel);
     addAndMakeVisible(balanceLabel);
     addAndMakeVisible(gainLabel);
 
@@ -180,6 +198,7 @@ UtilityAudioProcessorEditor::UtilityAudioProcessorEditor(UtilityAudioProcessor& 
     using ButtonAttachment = AudioProcessorValueTreeState::ButtonAttachment;
 
     widthSliderAttachment = std::make_unique<SliderAttachment>(audioProcessor.apvts, "Width", widthSlider);
+    midSideSliderAttachment = std::make_unique<SliderAttachment>(audioProcessor.apvts, "MidSide", midSideSlider);
     gainSliderAttachment = std::make_unique<SliderAttachment>(audioProcessor.apvts, "Gain", gainSlider);
     balanceSliderAttachment = std::make_unique<SliderAttachment>(audioProcessor.apvts, "Balance", balanceSlider);
     bassCrossoverSliderAttachment = std::make_unique<SliderAttachment>(audioProcessor.apvts, "BassMonoCrossover", bassCrossoverSlider);
@@ -203,6 +222,7 @@ UtilityAudioProcessorEditor::~UtilityAudioProcessorEditor()
     balanceSlider.setLookAndFeel(nullptr);
     bassCrossoverSlider.setLookAndFeel(nullptr);
     modeComboBox.setLookAndFeel(nullptr);
+    midSideSlider.setLookAndFeel(nullptr);
 
     invLeftPhaseButton.setLookAndFeel(nullptr);
     invRightPhaseButton.setLookAndFeel(nullptr);
@@ -220,10 +240,7 @@ void UtilityAudioProcessorEditor::paint (juce::Graphics& g)
     auto bounds = getLocalBounds();
     g.setColour(juce::Colours::grey.withAlpha(0.5f));
     g.drawVerticalLine(bounds.getWidth() / 2, bounds.getY() + 20, bounds.getBottom() - 20);
-}
 
-void UtilityAudioProcessorEditor::resized()
-{
     auto area = getLocalBounds();
     auto left = area.withTrimmedRight(area.getWidth() / 2);
     auto right = area.withTrimmedLeft(area.getWidth() / 2);
@@ -242,9 +259,29 @@ void UtilityAudioProcessorEditor::resized()
 
     modeComboBox.setBounds(left.removeFromTop(itemHeight).reduced(itemMargin).reduced(padding));
 
-    widthLabel.setBounds(left.removeFromTop(itemHeight).reduced(itemMargin));
+    if (midSideModeButton.getToggleState())
+    {
+        widthLabel.setVisible(false);
+        widthSlider.setVisible(false);
 
-    widthSlider.setBounds(left.removeFromTop(knobHeight).reduced(itemMargin));
+        midSideLabel.setVisible(true);
+        midSideSlider.setVisible(true);
+
+        midSideLabel.setBounds(left.removeFromTop(itemHeight).reduced(itemMargin));
+        midSideSlider.setBounds(left.removeFromTop(knobHeight).reduced(itemMargin));
+    }
+    else
+    {
+        midSideLabel.setVisible(false);
+        midSideSlider.setVisible(false);
+
+        widthLabel.setVisible(true);
+        widthSlider.setVisible(true);
+
+        widthLabel.setBounds(left.removeFromTop(itemHeight).reduced(itemMargin));
+        widthSlider.setBounds(left.removeFromTop(knobHeight).reduced(itemMargin));
+    }
+
     monoButton.setBounds(left.removeFromTop(itemHeight).reduced(itemMargin).reduced(padding));
 
 
@@ -275,7 +312,10 @@ void UtilityAudioProcessorEditor::resized()
     auto muteWidth = muteDcArea.getWidth() / 2;
     muteButton.setBounds(muteDcArea.removeFromLeft(muteWidth).reduced(padding));
     dcButton.setBounds(muteDcArea.reduced(padding));
+}
 
+void UtilityAudioProcessorEditor::resized()
+{
 #if JUCE_DEBUG
     for (int i = 0; i < getNumChildComponents(); ++i)
     {
@@ -337,25 +377,6 @@ bool UtilityAudioProcessorEditor::keyPressed(const juce::KeyPress& key)
     return false;
 }
 
-//void UtilityAudioProcessorEditor::mouseDown(const juce::MouseEvent& e)
-//{
-//    if (e.mods.isRightButtonDown())
-//    {
-//        midSideModePopupMenu.clear();
-//
-//        midSideModePopupMenu.addItem(1, "Mid/Side Mode", true, midSideModeButton.getToggleState());
-//
-//        midSideModePopupMenu.showMenuAsync(juce::PopupMenu::Options(), [this](int result)
-//        {
-//            if (result == 1)
-//            {
-//                midSideModeButton.setToggleState(!midSideModeButton.getToggleState(), juce::NotificationType::sendNotification);
-//                DBG("Mid/Side Mode toggled to: " + juce::String(midSideModeButton.getToggleState() ? "ON" : "OFF"));
-//            }
-//        });
-//    }
-//}
-
 void UtilityAudioProcessorEditor::onClickBassMono()
 {
     if (bassMonoButton.getToggleStateValue().toString() == "1")
@@ -385,13 +406,6 @@ void UtilityAudioProcessorEditor::onClickBassMono()
 
 void UtilityAudioProcessorEditor::showWidthSliderContextMenu(const juce::MouseEvent& e)
 {
-    //midSideModePopupMenu.clear();
-    //midSideModePopupMenu.addItem(1, "Mid/Side Mode", true, midSideModeButton.getToggleState());
-    //midSideModeButton.setToggleState(!midSideModeButton.getToggleState(), juce::NotificationType::sendNotification);
-    //DBG("Mid/Side Mode toggled to: " + juce::String(midSideModeButton.getToggleState() ? "ON" : "OFF"));
-    //midSideModePopupMenu.showMenuAsync();
-
-
     midSideModePopupMenu.clear();
 
     midSideModePopupMenu.addItem(1, "Mid/Side Mode", true, midSideModeButton.getToggleState());
@@ -402,6 +416,12 @@ void UtilityAudioProcessorEditor::showWidthSliderContextMenu(const juce::MouseEv
         {
             midSideModeButton.setToggleState(!midSideModeButton.getToggleState(), juce::NotificationType::sendNotification);
             DBG("Mid/Side Mode toggled to: " + juce::String(midSideModeButton.getToggleState() ? "ON" : "OFF"));
+            //if (midSideModeButton.getToggleState())
+            //{
+            //    DBG("Toggle state is True, set visible false...");
+            //    widthLabel.setVisible(false);
+            //    midSideLabel.setVisible(true);
+            //}
         }
     });
 }
