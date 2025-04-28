@@ -316,6 +316,10 @@ void UtilityAudioProcessorEditor::updateWidthMidSideVisibility()
 
     // Optional: Request a repaint if visibility changes might affect drawing
      repaint(); // Usually not strictly needed as setVisible often triggers repaint
+<<<<<<< HEAD
+=======
+     DBG("updateWidthMidSideVisibility.........................");
+>>>>>>> 1d75e24b1fef75769333bb2d24ea29acbe73cc66
 }
 
 
