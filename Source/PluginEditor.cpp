@@ -186,6 +186,10 @@ UtilityAudioProcessorEditor::UtilityAudioProcessorEditor(UtilityAudioProcessor& 
     addChildComponent(widthSlider);
     addChildComponent(widthLabel);
 
+
+    updateWidthMidSideVisibility();
+
+
     addAndMakeVisible(modeComboBox);
 
     addAndMakeVisible(inputLabel);
@@ -240,6 +244,10 @@ void UtilityAudioProcessorEditor::paint (juce::Graphics& g)
     auto bounds = getLocalBounds();
     g.setColour(juce::Colours::grey.withAlpha(0.5f));
     g.drawVerticalLine(bounds.getWidth() / 2, bounds.getY() + 20, bounds.getBottom() - 20);
+}
+
+void UtilityAudioProcessorEditor::resized()
+{
 
     auto area = getLocalBounds();
     auto left = area.withTrimmedRight(area.getWidth() / 2);
@@ -259,28 +267,10 @@ void UtilityAudioProcessorEditor::paint (juce::Graphics& g)
 
     modeComboBox.setBounds(left.removeFromTop(itemHeight).reduced(itemMargin).reduced(padding));
 
-    if (midSideModeButton.getToggleState())
-    {
-        widthLabel.setVisible(false);
-        widthSlider.setVisible(false);
-
-        midSideLabel.setVisible(true);
-        midSideSlider.setVisible(true);
-
-        midSideLabel.setBounds(left.removeFromTop(itemHeight).reduced(itemMargin));
-        midSideSlider.setBounds(left.removeFromTop(knobHeight).reduced(itemMargin));
-    }
-    else
-    {
-        midSideLabel.setVisible(false);
-        midSideSlider.setVisible(false);
-
-        widthLabel.setVisible(true);
-        widthSlider.setVisible(true);
-
-        widthLabel.setBounds(left.removeFromTop(itemHeight).reduced(itemMargin));
-        widthSlider.setBounds(left.removeFromTop(knobHeight).reduced(itemMargin));
-    }
+    midSideLabel.setBounds(left.removeFromTop(itemHeight).reduced(itemMargin));
+    midSideSlider.setBounds(left.removeFromTop(knobHeight).reduced(itemMargin));
+    widthLabel.setBounds(midSideLabel.getBounds());
+    widthSlider.setBounds(midSideSlider.getBounds());
 
     monoButton.setBounds(left.removeFromTop(itemHeight).reduced(itemMargin).reduced(padding));
 
@@ -290,13 +280,35 @@ void UtilityAudioProcessorEditor::paint (juce::Graphics& g)
     bassMonoButton.setBounds(left.removeFromTop(itemHeight).reduced(itemMargin).reduced(padding));
 
     auto bxAndPArea = left.removeFromTop(itemHeight).reduced(itemMargin);
-    auto bxAndPWidth = bxAndPArea.getWidth() / 1.3;
+    auto bxAndPWidth = bxAndPArea.getWidth() / 2;
 
     bassCrossoverSlider.setBounds(bxAndPArea.removeFromLeft(bxAndPWidth).reduced(padding));
-    auto bcsBounds = bassCrossoverSlider.getBounds();
-    bcsBounds.setWidth(bcsBounds.getWidth() + padding * 4);
-    bassCrossoverSlider.setBounds(bcsBounds);
     bassPreviewButton.setBounds(bxAndPArea.reduced(padding));
+
+    //// 1. Get the initial area for the slider
+    //auto sliderArea = bxAndPArea.removeFromLeft(bxAndPWidth);
+    //// 2. Get the remaining initial area for the button
+    //auto buttonArea2 = bxAndPArea; // This now holds the rest
+
+    //// 3. Apply padding selectively to the slider area
+    //// Trim top, left, bottom, but NOT right
+    //sliderArea = sliderArea.withTrimmedTop(padding)
+    //    .withTrimmedLeft(padding)
+    //    .withTrimmedBottom(padding);
+    //bassCrossoverSlider.setBounds(sliderArea);
+
+    //// 4. Apply padding selectively to the button area
+    //// Trim top, right, bottom, but NOT left
+    //buttonArea2 = buttonArea2.withTrimmedTop(padding)
+    //    .withTrimmedRight(padding)
+    //    .withTrimmedBottom(padding);
+    //bassPreviewButton.setBounds(buttonArea2);
+
+    //bassCrossoverSlider.setBounds(bxAndPArea.removeFromLeft(bxAndPWidth).reduced(padding));
+    //auto bcsBounds = bassCrossoverSlider.getBounds();
+    ////bcsBounds.setWidth(bcsBounds.getWidth() + padding * 4);
+    ////bassCrossoverSlider.setBounds(bcsBounds);
+    //bassPreviewButton.setBounds(bxAndPArea.reduced(padding));
 
     outputLabel.setBounds(right.removeFromTop(itemHeight).reduced(itemMargin));
 
@@ -312,10 +324,6 @@ void UtilityAudioProcessorEditor::paint (juce::Graphics& g)
     auto muteWidth = muteDcArea.getWidth() / 2;
     muteButton.setBounds(muteDcArea.removeFromLeft(muteWidth).reduced(padding));
     dcButton.setBounds(muteDcArea.reduced(padding));
-}
-
-void UtilityAudioProcessorEditor::resized()
-{
 #if JUCE_DEBUG
     for (int i = 0; i < getNumChildComponents(); ++i)
     {
@@ -326,6 +334,23 @@ void UtilityAudioProcessorEditor::resized()
         }
     }
 #endif
+}
+
+
+void UtilityAudioProcessorEditor::updateWidthMidSideVisibility()
+{
+    bool isMidSide = midSideModeButton.getToggleState();
+    DBG("isMidSide........................." + juce::String((int)isMidSide));
+
+    widthLabel.setVisible(!isMidSide);
+    widthSlider.setVisible(!isMidSide);
+
+    midSideLabel.setVisible(isMidSide);
+    midSideSlider.setVisible(isMidSide);
+
+    // Optional: Request a repaint if visibility changes might affect drawing
+     repaint(); // Usually not strictly needed as setVisible often triggers repaint
+     DBG("updateWidthMidSideVisibility.........................");
 }
 
 void UtilityAudioProcessorEditor::mouseMove(const juce::MouseEvent& event)
@@ -343,6 +368,7 @@ void UtilityAudioProcessorEditor::mouseMove(const juce::MouseEvent& event)
     //}
 #endif
 }
+
 
 bool UtilityAudioProcessorEditor::keyPressed(const juce::KeyPress& key)
 {
@@ -416,6 +442,8 @@ void UtilityAudioProcessorEditor::showWidthSliderContextMenu(const juce::MouseEv
         {
             midSideModeButton.setToggleState(!midSideModeButton.getToggleState(), juce::NotificationType::sendNotification);
             DBG("Mid/Side Mode toggled to: " + juce::String(midSideModeButton.getToggleState() ? "ON" : "OFF"));
+            updateWidthMidSideVisibility();
+
             //if (midSideModeButton.getToggleState())
             //{
             //    DBG("Toggle state is True, set visible false...");

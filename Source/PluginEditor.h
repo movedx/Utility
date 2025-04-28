@@ -21,22 +21,22 @@ enum FontHeight
 
 class CompactSlider : public juce::Slider
 {
-    int offsetX = 0;
+    //int offsetX = 0;
 
-    void mouseDown(const juce::MouseEvent& e) override
-    {
-        offsetX = e.x - this->getPositionOfValue(getValue()); // relative Y position from thumb center
+    //void mouseDown(const juce::MouseEvent& e) override
+    //{
+    //    offsetX = e.x - this->getPositionOfValue(getValue()); // relative Y position from thumb center
 
-        //if (abs(offsetX) > 10) // is out of thumb area?
-        //    offsetX = 0; // ignore offsetY
+    //    //if (abs(offsetX) > 10) // is out of thumb area?
+    //    //    offsetX = 0; // ignore offsetY
 
-        juce::Slider::mouseDown(e.withNewPosition(juce::Point<int>(e.x - offsetX, e.y)));
-    }
+    //    juce::Slider::mouseDown(e.withNewPosition(juce::Point<int>(e.x - offsetX, e.y)));
+    //}
 
-    void mouseDrag(const juce::MouseEvent& e) override
-    {
-        juce::Slider::mouseDrag(e.withNewPosition(juce::Point<int>(e.x - offsetX, e.y)));
-    }
+    //void mouseDrag(const juce::MouseEvent& e) override
+    //{
+    //    juce::Slider::mouseDrag(e.withNewPosition(juce::Point<int>(e.x - offsetX, e.y)));
+    //}
 };
 
 class ContextMenuSlider : public juce::Slider
@@ -151,20 +151,32 @@ struct LookAndFeel : juce::LookAndFeel_V4
                           float sliderPos, float minSliderPos, float maxSliderPos,
                           juce::Slider::SliderStyle, juce::Slider& slider) override
     {
-        //slider.setVelocityBasedMode(true);
+        DBG("drawLinearSlider.x" << x);
+        DBG("drawLinearSlider.y" << y);
+        DBG("drawLinearSlider.width" << width);
+        DBG("drawLinearSlider.height" << height);
+
+        auto localBounds = slider.getLocalBounds();
+
+
+        DBG("dlSlocalBounds" << localBounds.toString());
+        DBG("sliderPos" << sliderPos);
+
+        slider.setVelocityBasedMode(true);
+        sliderPos = juce::jmap(int(sliderPos), x, width, localBounds.getX(), localBounds.getWidth());
         int position = slider.getPositionOfValue(slider.getValue());
         //slider.setSliderSnapsToMousePosition(false);
         g.setColour(juce::Colours::blue.withAlpha(0.5f));
-        g.fillRect(0, 0, int(sliderPos - x), height);
+        g.fillRect(0, 0, int(sliderPos), height);
 
         g.setColour(juce::Colours::black);
-        g.drawRect(0, 0, width, height, 1);
+        g.drawRect(localBounds, 1);
 
         juce::String suffix = makeSuffix(slider);
 
         g.setColour(juce::Colours::black);
         auto valueText = juce::String(slider.getValue(), 0) + suffix;
-        g.drawFittedText(valueText, juce::Rectangle(0, 0, width, height), juce::Justification::centred, 1);
+        g.drawFittedText(valueText, localBounds, juce::Justification::centred, 1);
     }
 
 
@@ -272,6 +284,8 @@ public:
     //==============================================================================
     void paint (juce::Graphics&) override;
     void resized() override;
+
+    void updateWidthMidSideVisibility();
 
     void mouseMove(const juce::MouseEvent& event) override;
 
