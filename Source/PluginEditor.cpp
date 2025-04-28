@@ -30,14 +30,6 @@ UtilityAudioProcessorEditor::UtilityAudioProcessorEditor(UtilityAudioProcessor& 
 
     setSize(300, 430);
 
-    //setMouseTracking(true);
-    //for (int i = 0; i < getNumChildComponents(); ++i)
-    //{
-    //    if (auto* child = getChildComponent(i))
-    //        child->mouse
-    //        child->setMouseTracking(true);
-    //}
-
 #if JUCE_DEBUG
     for (int i = 0; i < getNumChildComponents(); ++i)
     {
@@ -285,31 +277,6 @@ void UtilityAudioProcessorEditor::resized()
     bassCrossoverSlider.setBounds(bxAndPArea.removeFromLeft(bxAndPWidth).reduced(padding));
     bassPreviewButton.setBounds(bxAndPArea.reduced(padding));
 
-    //// 1. Get the initial area for the slider
-    //auto sliderArea = bxAndPArea.removeFromLeft(bxAndPWidth);
-    //// 2. Get the remaining initial area for the button
-    //auto buttonArea2 = bxAndPArea; // This now holds the rest
-
-    //// 3. Apply padding selectively to the slider area
-    //// Trim top, left, bottom, but NOT right
-    //sliderArea = sliderArea.withTrimmedTop(padding)
-    //    .withTrimmedLeft(padding)
-    //    .withTrimmedBottom(padding);
-    //bassCrossoverSlider.setBounds(sliderArea);
-
-    //// 4. Apply padding selectively to the button area
-    //// Trim top, right, bottom, but NOT left
-    //buttonArea2 = buttonArea2.withTrimmedTop(padding)
-    //    .withTrimmedRight(padding)
-    //    .withTrimmedBottom(padding);
-    //bassPreviewButton.setBounds(buttonArea2);
-
-    //bassCrossoverSlider.setBounds(bxAndPArea.removeFromLeft(bxAndPWidth).reduced(padding));
-    //auto bcsBounds = bassCrossoverSlider.getBounds();
-    ////bcsBounds.setWidth(bcsBounds.getWidth() + padding * 4);
-    ////bassCrossoverSlider.setBounds(bcsBounds);
-    //bassPreviewButton.setBounds(bxAndPArea.reduced(padding));
-
     outputLabel.setBounds(right.removeFromTop(itemHeight).reduced(itemMargin));
 
     gainLabel.setBounds(right.removeFromTop(itemHeight).reduced(itemMargin));
@@ -351,22 +318,6 @@ void UtilityAudioProcessorEditor::updateWidthMidSideVisibility()
     // Optional: Request a repaint if visibility changes might affect drawing
      repaint(); // Usually not strictly needed as setVisible often triggers repaint
      DBG("updateWidthMidSideVisibility.........................");
-}
-
-void UtilityAudioProcessorEditor::mouseMove(const juce::MouseEvent& event)
-{
-#if JUCE_DEBUG
-    //hoveredComponent = getComponentAt(event.getPosition());
-    //if (hoveredComponent != nullptr)
-    //{
-    //    DBG("Hovered Component: " + hoveredComponent->getName());
-    //    DBG("Hovered Component Type: " + juce::String(typeid(*hoveredComponent).name()));
-    //}
-    //else
-    //{
-    //    DBG("No component is being hovered over.");
-    //}
-#endif
 }
 
 
@@ -443,13 +394,6 @@ void UtilityAudioProcessorEditor::showWidthSliderContextMenu(const juce::MouseEv
             midSideModeButton.setToggleState(!midSideModeButton.getToggleState(), juce::NotificationType::sendNotification);
             DBG("Mid/Side Mode toggled to: " + juce::String(midSideModeButton.getToggleState() ? "ON" : "OFF"));
             updateWidthMidSideVisibility();
-
-            //if (midSideModeButton.getToggleState())
-            //{
-            //    DBG("Toggle state is True, set visible false...");
-            //    widthLabel.setVisible(false);
-            //    midSideLabel.setVisible(true);
-            //}
         }
     });
 }
