@@ -19,26 +19,6 @@ enum FontHeight
     XL = 25
 };
 
-class CompactSlider : public juce::Slider
-{
-    //int offsetX = 0;
-
-    //void mouseDown(const juce::MouseEvent& e) override
-    //{
-    //    offsetX = e.x - this->getPositionOfValue(getValue()); // relative Y position from thumb center
-
-    //    //if (abs(offsetX) > 10) // is out of thumb area?
-    //    //    offsetX = 0; // ignore offsetY
-
-    //    juce::Slider::mouseDown(e.withNewPosition(juce::Point<int>(e.x - offsetX, e.y)));
-    //}
-
-    //void mouseDrag(const juce::MouseEvent& e) override
-    //{
-    //    juce::Slider::mouseDrag(e.withNewPosition(juce::Point<int>(e.x - offsetX, e.y)));
-    //}
-};
-
 class ContextMenuSlider : public juce::Slider
 {
 public:
@@ -101,12 +81,8 @@ struct LookAndFeel : juce::LookAndFeel_V4
                           float sliderPosProportional, float rotaryStartAngle,
                           float rotaryEndAngle, juce::Slider& slider) override
     {
-        // Make a local copy of the proportional position to potentially modify it
         float visualSliderPosProportional = sliderPosProportional;
 
-        // --- START: Custom mapping for Width Slider ---
-        // Check if this is the specific slider we want to modify
-        // Make sure the name matches exactly what you set in the Editor constructor!
         if (slider.getName() == "Width Slider")
         {
             auto currentValue = slider.getValue();
@@ -114,40 +90,29 @@ struct LookAndFeel : juce::LookAndFeel_V4
             auto maxValue = slider.getMaximum(); // 400.0
             auto centerValue = 100.0; // The value we want at the 12 o'clock position
 
-            // Ensure centerValue is within the slider's actual range
-            // centerValue = juce::jlimit(minValue, maxValue, centerValue);
-
             if (currentValue <= centerValue)
             {
-                // Map the range [minValue, centerValue] to the visual proportion [0.0, 0.5]
                 visualSliderPosProportional = juce::jmap(currentValue, minValue, centerValue, 0.0, 0.5);
             }
-            else // currentValue > centerValue
+            else
             {
-                // Map the range (centerValue, maxValue] to the visual proportion (0.5, 1.0]
                 visualSliderPosProportional = juce::jmap(currentValue, centerValue, maxValue, 0.5, 1.0);
             }
-            // Handle edge case where min == center or center == max if needed,
-            // but jmap should handle this reasonably.
         }
-        // --- END: Custom mapping for Width Slider ---
 
 
         auto bounds = juce::Rectangle<float>(x, y, width, height).reduced(4.0f);
         auto radius = juce::jmin(bounds.getWidth(), bounds.getHeight()) / 2.0f;
         auto center = bounds.getCentre();
 
-        // Use the potentially modified visual position to calculate the angle
         auto angle = rotaryStartAngle + visualSliderPosProportional * (rotaryEndAngle - rotaryStartAngle);
 
-        // Draw arc
         g.setColour(juce::Colours::grey);
         juce::Path arc;
         arc.addCentredArc(center.x, center.y, radius, radius, 0.0f,
                           rotaryStartAngle, rotaryEndAngle, true);
         g.strokePath(arc, juce::PathStrokeType(4.0f));
 
-        // Draw pointer
         float pointerLength = radius * 0.85f;
         float pointerThickness = 3.0f;
         juce::Point<float> startPoint = center.getPointOnCircumference(radius * 0.6f, angle);
@@ -158,7 +123,6 @@ struct LookAndFeel : juce::LookAndFeel_V4
 
         juce::String suffix = makeSuffix(slider);
 
-        // Draw value in the center of the knob
         g.setColour(juce::Colours::black);
         g.setFont(FontHeight::M);
         auto value = 0.f;
@@ -318,29 +282,12 @@ public:
 
     void updateWidthMidSideVisibility();
 
-    void mouseMove(const juce::MouseEvent& event) override;
-
     bool keyPressed(const juce::KeyPress& key) override;
 
 private:
     void onClickBassMono();
 
     void showWidthSliderContextMenu(const juce::MouseEvent& e);
-
-    //juce::Typeface::Ptr fontRegular = juce::Typeface::createSystemTypefaceFor(BinaryData::GyrochromeRegular_otf, BinaryData::GyrochromeRegular_otfSize);
-    //juce::Typeface::Ptr fontMedium = juce::Typeface::createSystemTypefaceFor(BinaryData::GyrochromeMedium_otf, BinaryData::GyrochromeMedium_otfSize);
-    //juce::Typeface::Ptr fontSemiBold = juce::Typeface::createSystemTypefaceFor(BinaryData::GyrochromeSemiBold_otf, BinaryData::GyrochromeSemiBold_otfSize);
-    //juce::Typeface::Ptr fontBold = juce::Typeface::createSystemTypefaceFor(BinaryData::GyrochromeBold_otf, BinaryData::GyrochromeBold_otfSize);
-
-    //juce::Typeface::Ptr fontRegular = juce::Typeface::createSystemTypefaceFor(BinaryData::Exo2Regular_ttf, BinaryData::Exo2Regular_ttfSize);
-    //juce::Typeface::Ptr fontMedium = juce::Typeface::createSystemTypefaceFor(BinaryData::Exo2Medium_ttf, BinaryData::Exo2Medium_ttfSize);
-    //juce::Typeface::Ptr fontSemiBold = juce::Typeface::createSystemTypefaceFor(BinaryData::Exo2SemiBold_ttf, BinaryData::Exo2SemiBold_ttfSize);
-    //juce::Typeface::Ptr fontBold = juce::Typeface::createSystemTypefaceFor(BinaryData::Exo2Bold_ttf, BinaryData::Exo2Bold_ttfSize);
-
-    //juce::Typeface::Ptr fontRegular = juce::Typeface::createSystemTypefaceFor(BinaryData::OrbitronRegular_ttf, BinaryData::OrbitronRegular_ttfSize);
-    //juce::Typeface::Ptr fontMedium = juce::Typeface::createSystemTypefaceFor(BinaryData::OrbitronMedium_ttf, BinaryData::OrbitronMedium_ttfSize);
-    //juce::Typeface::Ptr fontSemiBold = juce::Typeface::createSystemTypefaceFor(BinaryData::OrbitronSemiBold_ttf, BinaryData::OrbitronSemiBold_ttfSize);
-    //juce::Typeface::Ptr fontBold = juce::Typeface::createSystemTypefaceFor(BinaryData::OrbitronBold_ttf, BinaryData::OrbitronBold_ttfSize);
 
     juce::Typeface::Ptr fontRegular = juce::Typeface::createSystemTypefaceFor(BinaryData::MontserratRegular_ttf, BinaryData::MontserratRegular_ttfSize);
     juce::Typeface::Ptr fontMedium = juce::Typeface::createSystemTypefaceFor(BinaryData::MontserratMedium_ttf, BinaryData::MontserratMedium_ttfSize);
@@ -363,9 +310,7 @@ private:
         dcButton;
 
     ContextMenuSlider widthSlider, midSideSlider;
-    juce::Slider gainSlider, balanceSlider;
-
-    CompactSlider bassCrossoverSlider;
+    juce::Slider gainSlider, balanceSlider, bassCrossoverSlider;
 
     juce::ComboBox modeComboBox;
 
