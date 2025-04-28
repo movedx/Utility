@@ -101,10 +101,44 @@ struct LookAndFeel : juce::LookAndFeel_V4
                           float sliderPosProportional, float rotaryStartAngle,
                           float rotaryEndAngle, juce::Slider& slider) override
     {
+        // Make a local copy of the proportional position to potentially modify it
+        float visualSliderPosProportional = sliderPosProportional;
+
+        // --- START: Custom mapping for Width Slider ---
+        // Check if this is the specific slider we want to modify
+        // Make sure the name matches exactly what you set in the Editor constructor!
+        if (slider.getName() == "Width Slider")
+        {
+            auto currentValue = slider.getValue();
+            auto minValue = slider.getMinimum(); // 0.0
+            auto maxValue = slider.getMaximum(); // 400.0
+            auto centerValue = 100.0; // The value we want at the 12 o'clock position
+
+            // Ensure centerValue is within the slider's actual range
+            // centerValue = juce::jlimit(minValue, maxValue, centerValue);
+
+            if (currentValue <= centerValue)
+            {
+                // Map the range [minValue, centerValue] to the visual proportion [0.0, 0.5]
+                visualSliderPosProportional = juce::jmap(currentValue, minValue, centerValue, 0.0, 0.5);
+            }
+            else // currentValue > centerValue
+            {
+                // Map the range (centerValue, maxValue] to the visual proportion (0.5, 1.0]
+                visualSliderPosProportional = juce::jmap(currentValue, centerValue, maxValue, 0.5, 1.0);
+            }
+            // Handle edge case where min == center or center == max if needed,
+            // but jmap should handle this reasonably.
+        }
+        // --- END: Custom mapping for Width Slider ---
+
+
         auto bounds = juce::Rectangle<float>(x, y, width, height).reduced(4.0f);
         auto radius = juce::jmin(bounds.getWidth(), bounds.getHeight()) / 2.0f;
         auto center = bounds.getCentre();
-        auto angle = rotaryStartAngle + sliderPosProportional * (rotaryEndAngle - rotaryStartAngle);
+
+        // Use the potentially modified visual position to calculate the angle
+        auto angle = rotaryStartAngle + visualSliderPosProportional * (rotaryEndAngle - rotaryStartAngle);
 
         // Draw arc
         g.setColour(juce::Colours::grey);
@@ -125,8 +159,6 @@ struct LookAndFeel : juce::LookAndFeel_V4
         juce::String suffix = makeSuffix(slider);
 
         // Draw value in the center of the knob
-        //juce::Font monoBoldFont(juce::Font::getDefaultMonospacedFontName(), 15.0f, juce::Font::bold);
-        //g.setFont(monoBoldFont);
         g.setColour(juce::Colours::black);
         g.setFont(FontHeight::M);
         auto value = 0.f;
@@ -143,7 +175,6 @@ struct LookAndFeel : juce::LookAndFeel_V4
             value = slider.getValue();
         }
         auto valueText = juce::String(value, 0) + suffix;
-        //auto valueText = juce::String(slider.getTextValueSuffix().compareIgnoreCase("<balance>") == 0 ? abs(slider.getValue()) : slider.getValue(), 0) + suffix;
         g.drawFittedText(valueText, bounds.toNearestInt(), juce::Justification::centred, 1);
     }
     

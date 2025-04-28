@@ -280,7 +280,7 @@ void UtilityAudioProcessorEditor::resized()
     bassMonoButton.setBounds(left.removeFromTop(itemHeight).reduced(itemMargin).reduced(padding));
 
     auto bxAndPArea = left.removeFromTop(itemHeight).reduced(itemMargin);
-    auto bxAndPWidth = bxAndPArea.getWidth() / 2;
+    auto bxAndPWidth = bxAndPArea.getWidth() / 1.3;
 
     bassCrossoverSlider.setBounds(bxAndPArea.removeFromLeft(bxAndPWidth).reduced(padding));
     bassPreviewButton.setBounds(bxAndPArea.reduced(padding));
