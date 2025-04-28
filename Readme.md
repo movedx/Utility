@@ -7,4 +7,4 @@ A versatile stereo utility audio plugin built with the JUCE framework, heavily i
 
 ## Downloads
 
-Pre-compiled versions (VST3 format) for Windows **[GitHub Releases page](PLACEHOLDER_RELEASES_LINK_HERE)**.
+Pre-compiled versions (VST3 x64 format) for Windows **[Utility.vst3](https://github.com/movedx/Utility/raw/refs/heads/main/Utility.vst3)**.
