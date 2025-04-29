@@ -426,12 +426,68 @@ void UtilityAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
     // You should use this method to store your parameters in the memory block.
     // You could do that either as raw data, or use the XML or ValueTree classes
     // as intermediaries to make it easy to save and load complex data.
+
+    // This is the function the DAW calls to save the state.
+    // We ask the APVTS to write its current state into an XML format,
+    // then copy that XML data into the MemoryBlock provided by the host.
+
+    // Create an XML element to hold the state
+    auto state = apvts.copyState(); // Gets the APVTS state as a ValueTree
+    std::unique_ptr<juce::XmlElement> xml(state.createXml()); // Converts the ValueTree to XML
+
+    // If the XML was created successfully, copy it to the destination MemoryBlock
+    if (xml.get() != nullptr)
+        copyXmlToBinary(*xml, destData);
+
+    // **Important:** If you had OTHER non-parameter state variables
+    // (e.g., internal filter modes, settings not tied to an AudioParameter)
+    // you would need to save them here too, typically by adding them
+    // as attributes or child elements to the 'xml' object before calling copyXmlToBinary.
+    // For example:
+    // if (xml != nullptr) {
+    //     xml->setAttribute ("myCustomSetting", myInternalVariable);
+    //     copyXmlToBinary (*xml, destData);
+    // }
 }
 
 void UtilityAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
+
+    // This is the function the DAW calls to load the state.
+    // We try to convert the binary data back into an XML element.
+    // If successful, we tell the APVTS to replace its current state
+    // with the state described in the loaded XML.
+
+    // Try to get the XML state from the binary data
+    std::unique_ptr<juce::XmlElement> xmlState(getXmlFromBinary(data, sizeInBytes));
+
+    // If the XML was parsed successfully...
+    if (xmlState.get() != nullptr)
+    {
+        // ...and if it represents a valid ValueTree state...
+        if (xmlState->hasTagName(apvts.state.getType()))
+        {
+            // ...then replace the current APVTS state with the loaded one.
+            apvts.replaceState(juce::ValueTree::fromXml(*xmlState));
+
+            // **Important:** If you saved OTHER non-parameter state variables
+            // in getStateInformation, you need to load them back here
+            // from the 'xmlState' object *after* restoring the APVTS state.
+            // For example:
+            // myInternalVariable = xmlState->getIntAttribute ("myCustomSetting", defaultValue);
+            // updateInternalStuffBasedOnLoadedState(); // Call any functions needed to apply changes
+        }
+    }
+    // Make sure the editor reflects the newly loaded state if it's open
+    if (auto* editor = getActiveEditor())
+    {
+        // You might need a function in your editor to update all controls
+        // based on the current processor parameters, although APVTS attachments
+        // often handle this automatically. If not, trigger an update here.
+        // editor->updateControlsFromProcessor();
+    }
 }
 
 juce::AudioProcessorValueTreeState::ParameterLayout UtilityAudioProcessor::createParameterLayout()
