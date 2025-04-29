@@ -14,46 +14,7 @@
               file="Data/Fonts/Montserrat-Regular.ttf"/>
         <FILE id="K9L7BG" name="Montserrat-SemiBold.ttf" compile="0" resource="1"
               file="Data/Fonts/Montserrat-SemiBold.ttf"/>
-        <FILE id="aGcAQo" name="Orbitron-Bold.ttf" compile="0" resource="1"
-              file="Data/Fonts/Orbitron-Bold.ttf"/>
-        <FILE id="wg3J8C" name="Orbitron-Medium.ttf" compile="0" resource="1"
-              file="Data/Fonts/Orbitron-Medium.ttf"/>
-        <FILE id="F5Ajhq" name="Orbitron-Regular.ttf" compile="0" resource="1"
-              file="Data/Fonts/Orbitron-Regular.ttf"/>
-        <FILE id="AnqsoY" name="Orbitron-SemiBold.ttf" compile="0" resource="1"
-              file="Data/Fonts/Orbitron-SemiBold.ttf"/>
-        <FILE id="Pa9F9t" name="Exo2-Bold.ttf" compile="0" resource="1" file="Data/Fonts/Exo2-Bold.ttf"/>
-        <FILE id="Fs3rhr" name="Exo2-Light.ttf" compile="0" resource="1" file="Data/Fonts/Exo2-Light.ttf"/>
-        <FILE id="KHJmEI" name="Exo2-Medium.ttf" compile="0" resource="1" file="Data/Fonts/Exo2-Medium.ttf"/>
-        <FILE id="hcQ6I2" name="Exo2-Regular.ttf" compile="0" resource="1"
-              file="Data/Fonts/Exo2-Regular.ttf"/>
-        <FILE id="NNyEri" name="Exo2-SemiBold.ttf" compile="0" resource="1"
-              file="Data/Fonts/Exo2-SemiBold.ttf"/>
-        <FILE id="XSAPcC" name="Fredoka-Bold.ttf" compile="0" resource="1"
-              file="Data/Fonts/Fredoka-Bold.ttf"/>
-        <FILE id="k2Gwla" name="Fredoka-Light.ttf" compile="0" resource="1"
-              file="Data/Fonts/Fredoka-Light.ttf"/>
-        <FILE id="dOOzgI" name="Fredoka-Medium.ttf" compile="0" resource="1"
-              file="Data/Fonts/Fredoka-Medium.ttf"/>
-        <FILE id="fq5cz7" name="Fredoka-Regular.ttf" compile="0" resource="1"
-              file="Data/Fonts/Fredoka-Regular.ttf"/>
-        <FILE id="mfAUyl" name="Fredoka-SemiBold.ttf" compile="0" resource="1"
-              file="Data/Fonts/Fredoka-SemiBold.ttf"/>
         <FILE id="px2ICF" name="OFL.txt" compile="0" resource="1" file="Data/Fonts/OFL.txt"/>
-        <FILE id="mZOWU4" name="Gyrochrome-Bold.otf" compile="0" resource="1"
-              file="Data/Fonts/Gyrochrome-Bold.otf"/>
-        <FILE id="uEosSN" name="Gyrochrome-ExtraBold.otf" compile="0" resource="1"
-              file="Data/Fonts/Gyrochrome-ExtraBold.otf"/>
-        <FILE id="DH2KBB" name="Gyrochrome-Heavy.otf" compile="0" resource="1"
-              file="Data/Fonts/Gyrochrome-Heavy.otf"/>
-        <FILE id="HJkt8e" name="Gyrochrome-Medium.otf" compile="0" resource="1"
-              file="Data/Fonts/Gyrochrome-Medium.otf"/>
-        <FILE id="EVqMIW" name="Gyrochrome-Regular.otf" compile="0" resource="1"
-              file="Data/Fonts/Gyrochrome-Regular.otf"/>
-        <FILE id="zjRuGn" name="Gyrochrome-SemiBold.otf" compile="0" resource="1"
-              file="Data/Fonts/Gyrochrome-SemiBold.otf"/>
-        <FILE id="M6iNwa" name="GyrochromeVF.ttf" compile="0" resource="1"
-              file="Data/Fonts/GyrochromeVF.ttf"/>
       </GROUP>
     </GROUP>
     <GROUP id="{E6C418B4-4BBA-77AC-03EE-B5395479E85F}" name="Source">
