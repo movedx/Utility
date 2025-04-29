@@ -83,6 +83,7 @@ struct LookAndFeel : juce::LookAndFeel_V4
     {
         float visualSliderPosProportional = sliderPosProportional;
 
+        // Specific mapping for Width slider
         if (slider.getName() == "Width Slider")
         {
             auto currentValue = slider.getValue();
@@ -100,39 +101,89 @@ struct LookAndFeel : juce::LookAndFeel_V4
             }
         }
 
-
         auto bounds = juce::Rectangle<float>(x, y, width, height).reduced(4.0f);
         auto radius = juce::jmin(bounds.getWidth(), bounds.getHeight()) / 2.0f;
         auto center = bounds.getCentre();
+        auto arcThickness = 4.0f; // Define arc thickness
 
+        // Calculate the angle corresponding to the *visual* position
         auto angle = rotaryStartAngle + visualSliderPosProportional * (rotaryEndAngle - rotaryStartAngle);
+        auto centerAngle = (rotaryStartAngle + rotaryEndAngle) / 2.0f; // Angle at 12 o'clock
 
-        g.setColour(juce::Colours::grey);
-        juce::Path arc;
-        arc.addCentredArc(center.x, center.y, radius, radius, 0.0f,
-                          rotaryStartAngle, rotaryEndAngle, true);
-        g.strokePath(arc, juce::PathStrokeType(4.0f));
+        // --- Define Colors ---
+        auto backgroundColour = juce::Colours::grey.withAlpha(0.7f);
+        auto activeColour = juce::Colour(0, 238, 255); // Your active color
 
+        // --- Draw the full background arc (inactive part) ---
+        g.setColour(backgroundColour);
+        juce::Path backgroundArc;
+        backgroundArc.addCentredArc(center.x, center.y, radius, radius, 0.0f,
+                                    rotaryStartAngle, rotaryEndAngle, true);
+        // Using 'butt' end caps for the background arc might look cleaner if overlapping the active arc
+        g.strokePath(backgroundArc, juce::PathStrokeType(arcThickness, juce::PathStrokeType::curved, juce::PathStrokeType::butt));
+
+        // --- Determine if it's a centered slider ---
+        bool isCenteredSlider = (slider.getTextValueSuffix().compareIgnoreCase("<balance>") == 0 ||
+                                 slider.getTextValueSuffix().compareIgnoreCase("<mid/side>") == 0 ||
+                                 slider.getName() == "Width Slider" ||
+                                 slider.getName() == "Gain Slider");
+
+        // --- Draw the active arc portion ---
+        juce::Path activeArc;
+        g.setColour(activeColour);
+
+        if (isCenteredSlider)
+        {
+            if (!juce::approximatelyEqual(angle, centerAngle)) // Avoid drawing if exactly at center
+            {
+                if (angle > centerAngle) // Value is to the right of center
+                {
+                    activeArc.addCentredArc(center.x, center.y, radius, radius, 0.0f,
+                                            centerAngle, angle, true);
+                }
+                else // Value is to the left of center
+                {
+                    activeArc.addCentredArc(center.x, center.y, radius, radius, 0.0f,
+                                            angle, centerAngle, true);
+                }
+            }
+        }
+        else // Normal slider (e.g., Gain) - fills from the start
+        {
+            if (!juce::approximatelyEqual(angle, rotaryStartAngle)) // Avoid drawing if exactly at start
+            {
+                activeArc.addCentredArc(center.x, center.y, radius, radius, 0.0f,
+                                        rotaryStartAngle, angle, true);
+            }
+        }
+
+        // Draw the active arc if it has a meaningful length
+        if (!activeArc.isEmpty())
+            // Use rounded ends for the active part for a nicer look
+            g.strokePath(activeArc, juce::PathStrokeType(arcThickness, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
+
+
+        // --- Draw Pointer (Original Style) ---
         float pointerLength = radius * 0.85f;
         float pointerThickness = 3.0f;
+        // *** REVERTED START POINT CALCULATION ***
         juce::Point<float> startPoint = center.getPointOnCircumference(radius * 0.6f, angle);
         juce::Point<float> endPoint = center.getPointOnCircumference(pointerLength, angle);
 
-        g.setColour(juce::Colours::black);
+        g.setColour(juce::Colours::black); // Pointer color
         g.drawLine({ startPoint, endPoint }, pointerThickness);
 
-        juce::String suffix = makeSuffix(slider);
 
-        g.setColour(juce::Colours::black);
+        // --- Draw Text ---
+        juce::String suffix = makeSuffix(slider);
+        g.setColour(juce::Colours::black); // Text color
         g.setFont(FontHeight::M);
+
         auto value = 0.f;
-        if (slider.getTextValueSuffix().compareIgnoreCase("<balance>") == 0)
+        if (slider.getTextValueSuffix().compareIgnoreCase("<balance>") == 0 ||
+            slider.getTextValueSuffix().compareIgnoreCase("<mid/side>") == 0)
         {
-            value = abs(slider.getValue());
-        }
-        else if (slider.getTextValueSuffix().compareIgnoreCase("<mid/side>") == 0)
-        {
-            value = abs(slider.getValue());
+            value = std::abs(slider.getValue());
         }
         else
         {
