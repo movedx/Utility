@@ -42,13 +42,14 @@
     <MODULE id="juce_graphics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_gui_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_gui_extra" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="melatonin_inspector" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
   </MODULES>
   <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1" JUCE_VST3_CAN_REPLACE_VST2="0"/>
   <EXPORTFORMATS>
     <VS2022 targetFolder="Builds/VisualStudio2022">
       <CONFIGURATIONS>
         <CONFIGURATION isDebug="1" name="Debug" targetName="NewProject" enablePluginBinaryCopyStep="1"/>
-        <CONFIGURATION isDebug="0" name="Release" targetName="Utility"/>
+        <CONFIGURATION isDebug="0" name="Release" targetName="Utility" enablePluginBinaryCopyStep="1"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_audio_basics" path="../../../JUCE/modules"/>
@@ -64,6 +65,7 @@
         <MODULEPATH id="juce_graphics" path="../../../JUCE/modules"/>
         <MODULEPATH id="juce_gui_basics" path="../../../JUCE/modules"/>
         <MODULEPATH id="juce_gui_extra" path="../../../JUCE/modules"/>
+        <MODULEPATH id="melatonin_inspector" path="modules"/>
       </MODULEPATHS>
     </VS2022>
   </EXPORTFORMATS>

@@ -11,6 +11,10 @@
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
 
+#if JUCE_DEBUG
+#include "melatonin_inspector/melatonin_inspector.h"
+#endif
+
 enum FontHeight
 {
     S = 18,
@@ -336,6 +340,9 @@ public:
     bool keyPressed(const juce::KeyPress& key) override;
 
 private:
+#if JUCE_DEBUG
+    melatonin::Inspector inspector{ *this };
+#endif
     void onClickBassMono();
 
     void showWidthSliderContextMenu(const juce::MouseEvent& e);

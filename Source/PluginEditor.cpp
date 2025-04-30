@@ -15,7 +15,15 @@ UtilityAudioProcessorEditor::UtilityAudioProcessorEditor(UtilityAudioProcessor& 
     audioProcessor(p),
     widthSlider([this](const juce::MouseEvent& e) { showWidthSliderContextMenu(e); }),
     midSideSlider([this](const juce::MouseEvent& e) { showWidthSliderContextMenu(e); })
-{
+{ 
+#if JUCE_DEBUG
+    // open the inspector window
+    inspector.setVisible(true);
+
+    // enable the inspector
+    inspector.toggle(true);
+#endif
+
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
     //setResizable(true, true);
