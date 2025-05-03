@@ -7,11 +7,12 @@
 */
 
 #pragma once
+#define ENABLE_INSPECTOR false
 
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
 
-#if JUCE_DEBUG
+#if ENABLE_INSPECTOR
 #include "melatonin_inspector/melatonin_inspector.h"
 #endif
 
@@ -45,7 +46,7 @@ private:
 };
 
 
-struct LookAndFeel : juce::LookAndFeel_V4
+struct CustomLookAndFeel : juce::LookAndFeel_V4
 {
     juce::String makeSuffix(juce::Slider& slider)
     {
@@ -340,7 +341,7 @@ public:
     bool keyPressed(const juce::KeyPress& key) override;
 
 private:
-#if JUCE_DEBUG
+#if ENABLE_INSPECTOR
     melatonin::Inspector inspector{ *this };
 #endif
     void onClickBassMono();
@@ -354,7 +355,7 @@ private:
 
     UtilityAudioProcessor& audioProcessor;
 
-    LookAndFeel lnf;
+    CustomLookAndFeel lnf;
 
     juce::Label inputLabel, outputLabel;
     juce::Label widthLabel, balanceLabel, gainLabel, midSideLabel;

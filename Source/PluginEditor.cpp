@@ -16,7 +16,7 @@ UtilityAudioProcessorEditor::UtilityAudioProcessorEditor(UtilityAudioProcessor& 
     widthSlider([this](const juce::MouseEvent& e) { showWidthSliderContextMenu(e); }),
     midSideSlider([this](const juce::MouseEvent& e) { showWidthSliderContextMenu(e); })
 { 
-#if JUCE_DEBUG
+#if ENABLE_INSPECTOR
     // open the inspector window
     inspector.setVisible(true);
 
@@ -37,6 +37,9 @@ UtilityAudioProcessorEditor::UtilityAudioProcessorEditor(UtilityAudioProcessor& 
     juce::LookAndFeel::getDefaultLookAndFeel().setDefaultSansSerifTypeface(fontRegular);
 
     setSize(300, 430);
+
+    //float uiScale = 2.5;
+    //setScaleFactor(uiScale);
 
 #if JUCE_DEBUG
     for (int i = 0; i < getNumChildComponents(); ++i)
