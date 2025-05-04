@@ -18,6 +18,16 @@
       </GROUP>
     </GROUP>
     <GROUP id="{E6C418B4-4BBA-77AC-03EE-B5395479E85F}" name="Source">
+      <FILE id="MrxG3s" name="Font.cpp" compile="1" resource="0" file="Source/Font.cpp"/>
+      <FILE id="DSvqFJ" name="Font.h" compile="0" resource="0" file="Source/Font.h"/>
+      <FILE id="DMmFVM" name="ContextMenuSlider.cpp" compile="1" resource="0"
+            file="Source/ContextMenuSlider.cpp"/>
+      <FILE id="lC15j6" name="ContextMenuSlider.h" compile="0" resource="0"
+            file="Source/ContextMenuSlider.h"/>
+      <FILE id="ARVapo" name="CustomLookAndFeel.cpp" compile="1" resource="0"
+            file="Source/CustomLookAndFeel.cpp"/>
+      <FILE id="QskbHH" name="CustomLookAndFeel.h" compile="0" resource="0"
+            file="Source/CustomLookAndFeel.h"/>
       <FILE id="cjbNpr" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
       <FILE id="GZd01g" name="PluginProcessor.h" compile="0" resource="0"

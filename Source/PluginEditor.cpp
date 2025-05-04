@@ -34,34 +34,15 @@ UtilityAudioProcessorEditor::UtilityAudioProcessorEditor(UtilityAudioProcessor& 
 
     using namespace juce;
 
-    juce::LookAndFeel::getDefaultLookAndFeel().setDefaultSansSerifTypeface(fontRegular);
+    Fonts::loadTypefaces();
+
+    juce::LookAndFeel::getDefaultLookAndFeel().setDefaultSansSerifTypeface(Fonts::regular);
 
     setSize(300, 430);
 
     //float uiScale = 2.5;
     //setScaleFactor(uiScale);
 
-#if JUCE_DEBUG
-    for (int i = 0; i < getNumChildComponents(); ++i)
-    {
-        if (auto* child = getChildComponent(i))
-        {
-            child->setInterceptsMouseClicks(true, true);
-        }
-    }
-#endif
-
-    juce::Font smallFont = Font(fontRegular);
-    smallFont.setHeight(20.f);
-
-    juce::Font mediumFont = Font(fontMedium);
-    mediumFont.setHeight(20.f);
-
-    juce::Font semiBoldFont = Font(fontSemiBold);
-    semiBoldFont.setHeight(20.f);
-
-    juce::Font boldFont = Font(fontBold);
-    boldFont.setHeight(20.f);
 
     setName("Main Window");
     inputLabel.setName("Input Label");
@@ -96,7 +77,7 @@ UtilityAudioProcessorEditor::UtilityAudioProcessorEditor(UtilityAudioProcessor& 
     widthLabel.setText("Width", NotificationType::dontSendNotification);
     widthLabel.setColour(Label::textColourId, juce::Colours::black);
     widthLabel.setJustificationType(Justification::centredBottom);
-    widthLabel.setFont(semiBoldFont.withHeight(FontHeight::L));
+    widthLabel.setFont(Fonts::getSemiBold(FontHeight::L));
 
     widthSlider.setLookAndFeel(&lnf);
     widthSlider.setSliderStyle(Slider::RotaryVerticalDrag);
@@ -106,7 +87,7 @@ UtilityAudioProcessorEditor::UtilityAudioProcessorEditor(UtilityAudioProcessor& 
     midSideLabel.setText("Mid/Side", NotificationType::dontSendNotification);
     midSideLabel.setColour(Label::textColourId, juce::Colours::black);
     midSideLabel.setJustificationType(Justification::centredBottom);
-    midSideLabel.setFont(semiBoldFont.withHeight(FontHeight::L));
+    midSideLabel.setFont(Fonts::getSemiBold(FontHeight::L));
 
     midSideSlider.setLookAndFeel(&lnf);
     midSideSlider.setSliderStyle(Slider::RotaryVerticalDrag);
@@ -116,7 +97,7 @@ UtilityAudioProcessorEditor::UtilityAudioProcessorEditor(UtilityAudioProcessor& 
     gainLabel.setText("Gain", juce::NotificationType::dontSendNotification);
     gainLabel.setColour(juce::Label::textColourId, Colours::black);
     gainLabel.setJustificationType(Justification::centredBottom);
-    gainLabel.setFont(semiBoldFont.withHeight(FontHeight::L));
+    gainLabel.setFont(Fonts::getSemiBold(FontHeight::L));
 
     gainSlider.setLookAndFeel(&lnf);
     gainSlider.setSliderStyle(Slider::RotaryVerticalDrag);
@@ -126,7 +107,7 @@ UtilityAudioProcessorEditor::UtilityAudioProcessorEditor(UtilityAudioProcessor& 
     balanceLabel.setText("Balance", NotificationType::dontSendNotification);
     balanceLabel.setColour(Label::textColourId, Colours::black);
     balanceLabel.setJustificationType(Justification::centredBottom);
-    balanceLabel.setFont(semiBoldFont.withHeight(FontHeight::L));
+    balanceLabel.setFont(Fonts::getSemiBold(FontHeight::L));
 
 
     balanceSlider.setLookAndFeel(&lnf);
@@ -142,12 +123,12 @@ UtilityAudioProcessorEditor::UtilityAudioProcessorEditor(UtilityAudioProcessor& 
 
     inputLabel.setColour(juce::Label::textColourId, Colours::black);
     inputLabel.setText("Input", NotificationType::dontSendNotification);
-    inputLabel.setFont(boldFont.withHeight(FontHeight::XL));
+    inputLabel.setFont(Fonts::getSemiBold(FontHeight::XL));
     inputLabel.setJustificationType(Justification::centred);
 
     outputLabel.setColour(juce::Label::textColourId, Colours::black);
     outputLabel.setText("Output", NotificationType::dontSendNotification);
-    outputLabel.setFont(boldFont.withHeight(FontHeight::XL));
+    outputLabel.setFont(Fonts::getSemiBold(FontHeight::XL));
     outputLabel.setJustificationType(Justification::centred);
 
     modeComboBox.setLookAndFeel(&lnf);
@@ -238,6 +219,8 @@ UtilityAudioProcessorEditor::~UtilityAudioProcessorEditor()
     bassPreviewButton.setLookAndFeel(nullptr);
     muteButton.setLookAndFeel(nullptr);
     dcButton.setLookAndFeel(nullptr);
+
+    Fonts::unloadTypefaces();
 }
 
 //==============================================================================
