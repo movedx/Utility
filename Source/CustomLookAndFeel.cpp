@@ -169,11 +169,27 @@ void CustomLookAndFeel::drawLinearSlider(juce::Graphics& g, int x, int y, int wi
     DBG("sliderPos" << sliderPos);
 
     slider.setVelocityBasedMode(true);
-    sliderPos = juce::jmap(int(sliderPos), x, width, localBounds.getX(), localBounds.getWidth());
-    int position = slider.getPositionOfValue(slider.getValue());
-    //slider.setSliderSnapsToMousePosition(false);
-    g.setColour(juce::Colours::blue.withAlpha(0.5f));
-    g.fillRect(0, 0, int(sliderPos), height);
+
+    if (slider.getSliderStyle() == juce::Slider::SliderStyle::LinearHorizontal)
+    {
+        sliderPos = juce::jmap(int(sliderPos), x, width, localBounds.getX(), localBounds.getWidth());
+
+        //int position = slider.getPositionOfValue(slider.getValue());
+        //slider.setSliderSnapsToMousePosition(false);
+        g.setColour(juce::Colours::blue.withAlpha(0.5f));
+        g.fillRect(0, 0, int(sliderPos), height);
+    }
+    else if (slider.getSliderStyle() == juce::Slider::SliderStyle::LinearVertical)
+    {
+        //double current_value = slider.getValue();
+        //sliderPos = juce::jmap(int(current_value), 20, 500, localBounds.getX(), localBounds.getWidth());
+
+        //g.setColour(juce::Colours::blue.withAlpha(0.5f));
+        //DBG("CURRENT VALUE: " << current_value);
+        //DBG("CURRENT sliderPos: " << sliderPos);
+
+        //g.fillRect(0, 0, int(sliderPos), height);
+    }
 
     g.setColour(juce::Colours::black);
     g.drawRect(localBounds, 1);
